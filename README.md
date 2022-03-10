@@ -10,3 +10,7 @@ Final Project for CS 5100: Foundations of AI
 
 ### List of resources:
   -  [article list](https://github.com/ybayle/awesome-deep-learning-music)
+  
+  
+### Libraries
+  - [librosa](https://librosa.org/doc/latest/index.html) - "python package for music and audio analysis. It provides the building blocks necessary to create music information retrieval systems."
