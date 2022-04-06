@@ -1,6 +1,6 @@
 # ai-project
 Final Project for CS 5100: Foundations of AI
-
+By Bernie Sander, Jackie Himel, Dylan Wu
 
 ### Classification papers/articles:
   - [Music Tonality Features for Speech/Music Discrimination](https://ieeexplore.ieee.org/document/6854048)
