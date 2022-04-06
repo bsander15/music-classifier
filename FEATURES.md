@@ -9,6 +9,7 @@
      - Relevance and characteristics: Measures frequency at which the signal crosses the x axis in the time domain; predicts/characterizes periodicity, e.g. is used for classification percusivenss of different musical tracks.
      - Research papers:
         1. https://web.archive.org/web/20181029191653/https://pdfs.semanticscholar.org/6509/14f8be2c96ab2f55faec54d3e3876c5b1b69.pdf
+        2. This paper uses a 9-d feature vector which includes ZCR and SC mean/std features: https://ismir2001.ismir.net/pdf/tzanetakis.pdf
     
 3. Mel Frequency Spectrogram Coefficients (MFCC)
      - Relevance and characteristics: Apparantely best feature for NNs; shows the logs of frequencies (Mel scale) over time, and the log/Mel amplitudes of those frequencies. Virtually all Genre classification deepl learning papers mention using this feeature.
