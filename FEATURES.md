@@ -26,7 +26,7 @@
 
 ### Music/Other Classifier
 
-  - ### Data sources, testing/training data
+  - #### Data sources, testing/training data
 
   - #### Preprocessing steps
     1. Merge original voice data set with other miscellaneous sounds (including animals, traffic, computer noise)
@@ -38,7 +38,7 @@
 
 ### Musical Genre Classifier
 
-  - ### Data sources, testing/training data
+  - #### Data sources, testing/training data
     - Source: GTZAN data set (this source has been cited by virtually every research paper we've read, and is said to be effective training data)
     - Link to [GTZAN data set](http://marsyas.info/downloads/datasets.html#)
     - This data source was used in this well known paper: [" Musical genre classification of audio signals " by G. Tzanetakis and P. Cook in IEEE Transactions on Audio and Speech Processing 2002](https://ieeexplore.ieee.org/document/1021072/figures#figures)
