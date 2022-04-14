@@ -64,12 +64,12 @@ other_sc_var = np.var(other_sc, axis=1)
 sc_var = np.concatenate((music_sc_var,other_sc_var), axis=0)
 sc_var = np.reshape(sc_var,(159,1))
 
-feature_table = np.hstack((zcr_mean,sc_mean,mfcc_mean))
+feature_table = np.hstack((zcr_mean,sc_mean,mfcc_mean,zcr_var,sc_var,mfcc_var))
 print("feature table shape:", str(feature_table.shape))
 scaler = sklearn.preprocessing.MinMaxScaler(feature_range=(-1,1))
-normalized_means = scaler.fit_transform(feature_table)
+training_features = scaler.fit_transform(feature_table)
 # print(normalized_means.shape)
-training_features = np.hstack((normalized_means,zcr_var,sc_var,mfcc_var))
+# training_features = np.hstack((normalized_means,zcr_var,sc_var,mfcc_var))
 print("training features shape: ",training_features.shape)
 
 labels = ["zcr_mean","sc_mean","mfcc_mean1","mfcc_mean2","mfcc_mean3","mfcc_mean4",
