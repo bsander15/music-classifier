@@ -12,14 +12,15 @@ Features Extracted So Far:
 Zero Crossing Rate
 Spectral Centroid
 """
-# music_signals =np.array([librosa.load(p)[0] for p in Path().glob('data/music_wav/*.wav')])
-# other_signals = np.array([librosa.load(p,duration=30)[0] for p in Path().glob('data/other_wav/*.wav')])
+durationLabel = ''
+music_signals =np.array([librosa.load(p)[0] for p in Path().glob('data/music_wav{}/*.wav'.format(durationLabel))])
+other_signals = np.array([librosa.load(p,duration=30)[0] for p in Path().glob('data/other_wav*{}/*.wav'.format(durationLabel))])
 
 # np.save('data/music_signals', music_signals)
 # np.save('data/other_signals', other_signals)
 
-music_signals = np.array(np.load('data/music_signals.npy'))
-other_signals = np.array(np.load('data/other_signals.npy'))
+# music_signals = np.array(np.load('data/music_signals.npy'))
+# other_signals = np.array(np.load('data/other_signals.npy'))
 
 music_mfcc = librosa.feature.mfcc(y=music_signals)
 other_mfcc = librosa.feature.mfcc(y=other_signals)
@@ -47,22 +48,22 @@ other_sc = np.array([librosa.feature.spectral_centroid(y=x)[0] for x in other_si
 music_zcr_mean = np.mean(music_zcr, axis=1)
 other_zcr_mean = np.mean(other_zcr, axis=1)
 zcr_mean = np.concatenate((music_zcr_mean,other_zcr_mean), axis=0)
-zcr_mean = np.reshape(zcr_mean,(159,1))
+zcr_mean = np.reshape(zcr_mean,(music_signals.shape[0]+other_signals.shape[0],1))
 
 music_sc_mean = np.mean(music_sc, axis=1)
 other_sc_mean = np.mean(other_sc, axis=1)
 sc_mean = np.concatenate((music_sc_mean,other_sc_mean), axis=0)
-sc_mean = np.reshape(sc_mean,(159,1))
+sc_mean = np.reshape(sc_mean,(music_signals.shape[0]+other_signals.shape[0],1))
 
 music_zcr_var = np.var(music_zcr, axis=1)
 other_zcr_var = np.var(other_zcr, axis=1)
 zcr_var = np.concatenate((music_zcr_var,other_zcr_var), axis=0)
-zcr_var = np.reshape(zcr_var,(159,1))
+zcr_var = np.reshape(zcr_var,(music_signals.shape[0]+other_signals.shape[0],1))
 
 music_sc_var = np.var(music_sc, axis=1)
 other_sc_var = np.var(other_sc, axis=1)
 sc_var = np.concatenate((music_sc_var,other_sc_var), axis=0)
-sc_var = np.reshape(sc_var,(159,1))
+sc_var = np.reshape(sc_var,(music_signals.shape[0]+other_signals.shape[0],1))
 
 feature_table = np.hstack((zcr_mean,sc_mean,mfcc_mean,zcr_var,sc_var,mfcc_var))
 print("feature table shape:", str(feature_table.shape))
@@ -83,16 +84,16 @@ labels = ["zcr_mean","sc_mean","mfcc_mean1","mfcc_mean2","mfcc_mean3","mfcc_mean
             "mfcc_var20"
 ]
 
-music = ['music' for x in range(64)]
+music = ['music' for x in range(music_signals.shape[0])]
 musicDf = pandas.DataFrame(music)
-other = pandas.DataFrame(['other' for x in range(95)])
+other = pandas.DataFrame(['other' for x in range(other_signals.shape[0])])
 audioLabels = musicDf.append(other, ignore_index=True)
 audioLabelsDf = pandas.DataFrame(audioLabels, dtype=pandas.StringDtype())
 
 
 data = pandas.DataFrame(training_features, columns=labels)
 dataset = pandas.concat([data,audioLabelsDf],axis=1)
-dataset.to_csv("music_other_dataset.csv")
+dataset.to_csv("music_other_dataset{}.csv".format(durationLabel))
 
 
 
