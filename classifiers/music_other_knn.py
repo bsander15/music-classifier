@@ -4,8 +4,21 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.neural_network import MLPClassifier
 
+dataset = pd.read_csv('~/roux_classes/cs5100_ai/final_project/audio-classifier/music_other_dataset.csv')
+X = dataset.iloc[:,1:-1].values
+y = dataset.iloc[:,45].values
+X_train, X_test,y_train,y_test = train_test_split(X,y, test_size=0.2)
 
+clf = MLPClassifier(solver='adam', activation='tanh', hidden_layer_sizes=(44, 44, 44), max_iter=500)
+clf.fit(X_train,y_train)
+preds = clf.predict(X_test)
+print(np.mean(y_test == preds))
+print(preds)
+print(y_test)
+print(confusion_matrix(y_test,preds))
+print(classification_report(y_test,preds))
 '''
 Find best k value
 '''
@@ -71,7 +84,7 @@ def main():
     print(cr)
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
 
 
