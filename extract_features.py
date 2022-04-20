@@ -20,7 +20,7 @@ class ExtractFeatures:
         self.signals = signals
 
         self.feature_table = {'zcr': lambda signals: np.array([l.feature.zero_crossing_rate(x)[0] for x in signals]), 
-            'spectral_centroid': lambda signals: np.array([l.feature.spectral_centroid(x)[0] for x in signals]), 
+            'sc': lambda signals: np.array([l.feature.spectral_centroid(x)[0] for x in signals]), 
             'mfcc': lambda signals: np.array([l.feature.mfcc(x)[0] for x in signals]),
             'rolloff': lambda signals: np.array([l.spectral_rolloff(x)[0] for x in signals]),
             'beat': lambda signals: np.array([l.beat.beat_tracker(x) for x in signals]),
