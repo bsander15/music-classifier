@@ -48,9 +48,9 @@ class ExtractFeatures:
                     feature = self.mean(feature_arr, axis=1, keepdims=True)
             elif suffix == 'var':
                 if prefix == 'mfcc':
-                    feature = np.mean(feature_arr, axis=2)
+                    feature = np.var(feature_arr, axis=2)
                 else:
-                    feature = np.mean(feature_arr, axis=1, keepdims=True)
+                    feature = np.var(feature_arr, axis=1, keepdims=True)
 
             features.append(feature)
 
