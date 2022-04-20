@@ -3,8 +3,9 @@ import sys
 import shutil
 import librosa
 import numpy as np
+from sklearn.metrics import classification_report, confusion_matrix
 import soundfile as sf
-from pickle import dump
+from pickle import dump, load
 import sklearn.preprocessing
 from pydub import AudioSegment
 from classifiers.music_other_knn import MusicKNN
@@ -51,8 +52,20 @@ class MusicAgent:
         mfcc_var = np.var(mfcc, axis=2)
 
         feature_table = np.hstack((zcr_mean,sc_mean,mfcc_mean,zcr_var,sc_var,mfcc_var))
-        
+
         return feature_table
+    
+    def normalize(self, features, scaler=None):
+        if not scaler:
+            scaler = sklearn.preprocessing.StandardScaler().fit(features)
+            dump(scaler, open('scaler.pkl', 'wb'))
+            features_normalized = scaler.transform(features)
+        else:
+            features_normalized = scaler.transform(features)
+        
+        return features_normalized
+ 
+    
 
 
 class TrainingBuilder(MusicAgent):
@@ -81,30 +94,27 @@ class TrainingBuilder(MusicAgent):
         labels = np.vstack((music_labels,other_labels))
 
         feature_table = np.vstack((music_features,other_features))
-        feature_table_normalized = self.normalize(feature_table)
+        feature_table_normalized = super().normalize(feature_table)
 
         training_data = np.hstack((feature_table_normalized,labels))
         print(training_data.shape)
         np.savetxt('data.csv', training_data, delimiter=',')
 
-    def normalize(self, features):
-        scaler = sklearn.preprocessing.StandardScaler().fit(features)
-        features_normalized = scaler.transform(features)
-        return features_normalized 
         
-        
-                
-
-
-
 def main(argv):
     # ma = MusicAgent(argv[1])
     # print(ma.audio)
     # ma.segment_audio(3)
     # ma.extract_features()
-    training = TrainingBuilder(['music_wav_3sec'],['other_wav1_3sec','other_wav2_3sec','other_wav3_3sec'])
-    training.create_training()
-
+    # training = TrainingBuilder(['music_wav_3sec'],['other_wav1_3sec','other_wav2_3sec','other_wav3_3sec'])
+    # training.create_training()
+    data = np.genfromtxt('data/data.csv', delimiter=',')
+    X = data[:,:44]
+    y = data[:,44]
+    knn = MusicKNN(X,y)
+    preds = knn.predict()
+    confusion_matrix, classification_report = knn.metrics(preds)
+    print(confusion_matrix, classification_report)
 
 if __name__ == '__main__':
     main(sys.argv)
