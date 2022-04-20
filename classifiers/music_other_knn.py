@@ -5,46 +5,49 @@ from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.neural_network import MLPClassifier
+from pydub import AudioSegment
 
-dataset = pd.read_csv('~/roux_classes/cs5100_ai/final_project/audio-classifier/music_other_dataset.csv')
-X = dataset.iloc[:,1:-1].values
-y = dataset.iloc[:,45].values
-X_train, X_test,y_train,y_test = train_test_split(X,y, test_size=0.2)
 
-clf = MLPClassifier(solver='adam', activation='tanh', hidden_layer_sizes=(44, 44, 44), max_iter=500)
-clf.fit(X_train,y_train)
-preds = clf.predict(X_test)
-print(np.mean(y_test == preds))
-print(preds)
-print(y_test)
-print(confusion_matrix(y_test,preds))
-print(classification_report(y_test,preds))
+
+# dataset = pd.read_csv('data/music_other_dataset_3sec.csv')
+# X = dataset.iloc[:,1:-1].values
+# y = dataset.iloc[:,45].values
+# X_train, X_test,y_train,y_test = train_test_split(X,y, test_size=0.2)
+
+# clf = MLPClassifier(hidden_layer_sizes=(44,44,44,44,44), max_iter=500)
+# clf.fit(X_train,y_train)
+# preds = clf.predict(X_test)
+# print(np.mean(y_test == preds))
+# print(confusion_matrix(y_test,preds))
+# print(classification_report(y_test,preds))
 '''
 Find best k value
 '''
-# all_errors = np.zeros((40,100))
-# for x in range(100):
-#     X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.2)
 
-#     sample_errors = []
-#     for i in range(1,41):
-#         knn = KNeighborsClassifier(n_neighbors=i)
-#         knn.fit(X_train,y_train)
-#         y_pred = knn.predict(X_test)
-#         sample_errors.append(np.mean(y_pred != y_test))
-#     all_errors[:,x] = sample_errors
-#     # plt.figure(figsize=(10,7))
-#     # plt.plot(range(1,41),errors, color='red', linestyle='dashed', marker='o')
-#     # plt.title('Error Rate by K-Value')
-#     # plt.xlabel('K-Value')
-#     # plt.ylabel('Error Rate')
-#     # plt.show()
-# k_avg_error = np.mean(all_errors,axis=1)
-# k = np.argmin(k_avg_error)
-# print(k_avg_error)
-# print(k)
+def bestK(X,y):
+    all_errors = np.zeros((40,100))
+    for x in range(100):
+        X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.2)
 
-class Music_KNN:
+        sample_errors = []
+        for i in range(1,41):
+            knn = KNeighborsClassifier(n_neighbors=i)
+            knn.fit(X_train,y_train)
+            y_pred = knn.predict(X_test)
+            sample_errors.append(np.mean(y_pred != y_test))
+        all_errors[:,x] = sample_errors
+        # plt.figure(figsize=(10,7))
+        # plt.plot(range(1,41),errors, color='red', linestyle='dashed', marker='o')
+        # plt.title('Error Rate by K-Value')
+        # plt.xlabel('K-Value')
+        # plt.ylabel('Error Rate')
+        # plt.show()
+    k_avg_error = np.mean(all_errors,axis=1)
+    k = np.argmin(k_avg_error)
+    print(k_avg_error)
+    print(k)
+
+class MusicKNN:
 
     """
     Initialize KNN object with default k value of 5 (from testing above)
@@ -73,11 +76,11 @@ class Music_KNN:
         return confusion_matrix(self.y_test,preds), classification_report(self.y_test,preds)
 
 def main():
-    dataset = pd.read_csv('data/music_other_dataset.csv')
+    dataset = pd.read_csv('data/music_other_dataset_3sec.csv')
     X = dataset.iloc[:,1:-1].values
     y = dataset.iloc[:,45].values
-
-    knn = Music_KNN(X,y)
+    # bestK(X,y)
+    knn = MusicKNN(X,y,1)
     preds = knn.predict()
     cf,cr = knn.metrics(preds)
     print(cf)
