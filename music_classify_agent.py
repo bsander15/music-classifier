@@ -4,6 +4,7 @@ import shutil
 import librosa
 import numpy as np
 import soundfile as sf
+from pickle import dump
 import sklearn.preprocessing
 from pydub import AudioSegment
 from classifiers.music_other_knn import MusicKNN
@@ -54,12 +55,56 @@ class MusicAgent:
         return feature_table
 
 
+class TrainingBuilder(MusicAgent):
+
+    def __init__(self, music_dir, other_dir):
+        self.music_dir = music_dir
+        self.other_dir = other_dir
+
+    def create_training(self):
+        music_features = np.array([])
+        for directory in self.music_dir:
+            if music_features.size == 0:
+                music_features = super().extract_features(directory)
+            else:
+                music_features = np.vstack((other_features,super().extract_features(directory)))
+        music_labels = np.ones((music_features.shape[0],1))
+
+        other_features = np.array([])
+        for directory in self.other_dir:
+            if other_features.size == 0:
+                other_features = super().extract_features(directory)
+            else:
+                other_features = np.vstack((other_features,super().extract_features(directory)))
+        other_labels = np.zeros((other_features.shape[0],1))
+
+        labels = np.vstack((music_labels,other_labels))
+
+        feature_table = np.vstack((music_features,other_features))
+        feature_table_normalized = self.normalize(feature_table)
+
+        training_data = np.hstack((feature_table_normalized,labels))
+        print(training_data.shape)
+        np.savetxt('data.csv', training_data, delimiter=',')
+
+    def normalize(self, features):
+        scaler = sklearn.preprocessing.StandardScaler().fit(features)
+        features_normalized = scaler.transform(features)
+        return features_normalized 
+        
+        
+                
+
+
 
 def main(argv):
-    ma = MusicAgent(argv[1])
-    print(ma.audio)
-    ma.segment_audio(3)
-    ma.extract_features()
+    # ma = MusicAgent(argv[1])
+    # print(ma.audio)
+    # ma.segment_audio(3)
+    # ma.extract_features()
+    training = TrainingBuilder(['music_wav_3sec'],['other_wav1_3sec','other_wav2_3sec','other_wav3_3sec'])
+    training.create_training()
+
 
 if __name__ == '__main__':
     main(sys.argv)
