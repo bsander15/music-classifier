@@ -9,7 +9,7 @@ from pickle import dump, load
 import sklearn.preprocessing
 from pydub import AudioSegment
 from classifiers.music_other_knn import MusicKNN
-
+from extract_features import ExtractFeatures
 
 
 class MusicAgent:
@@ -36,24 +36,15 @@ class MusicAgent:
             audio, samplerate = sf.read('segments/file_{}.wav'.format(segment))
             sf.write('segments/file_{}.wav'.format(segment), audio, samplerate, subtype='PCM_16')
 
-    def extract_features(self, directory):
+    def extract_features(self, directory, feature_names=None):
+        if not feature_names:
+            feature_names = ['zcr_mean', 'sc_mean', 'mfcc_mean', 'mfcc_var', 'zcr_var', 'sc_var']
+
         signals = np.array([librosa.load('{}/{}'.format(directory,f))[0] for f in os.listdir(directory)])
 
-        zcr = np.array([librosa.feature.zero_crossing_rate(x)[0] for x in signals])
-        sc = np.array([librosa.feature.spectral_centroid(y=x)[0] for x in signals])
-        mfcc = librosa.feature.mfcc(y=signals)
+        fe = ExtractFeatures(signals, feature_names) 
 
-        zcr_mean = np.mean(zcr, axis=1, keepdims=True)
-        sc_mean = np.mean(sc, axis=1, keepdims=True)
-        mfcc_mean = np.mean(mfcc, axis=2)
-
-        zcr_var = np.var(zcr, axis=1, keepdims=True)
-        sc_var = np.var(sc, axis=1, keepdims=True)
-        mfcc_var = np.var(mfcc, axis=2)
-
-        feature_table = np.hstack((zcr_mean,sc_mean,mfcc_mean,zcr_var,sc_var,mfcc_var))
-
-        return feature_table
+        return fe.get_feature_vector()
     
     def normalize(self, features, scaler=None):
         if not scaler:
