@@ -59,4 +59,5 @@ class ExtractFeatures:
     def get_feature_vector(self):
         return self.feature_vector
 
-    def get_possible_names(self)
+    def get_possible_names(self):
+        return self.possible_names

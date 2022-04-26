@@ -2,12 +2,12 @@
 from extract_features import *
 import random
 
-
+ 
 class SelectFeatures:
     def __init__(self, signals, model):
         self.signals = signals
         self.model = model
-        self.features = ExtractFeatures(self.signals, feature_names)
+        self.features = { f'{pref}_{suf}' for pref in {'mean', 'var'} for suf in {'sc', 'mfcc', 'rolloff', 'beat'}}
 
     def rand_individual(self, size=8):
         return random.sample(self.features, k=size)
@@ -20,10 +20,8 @@ class SelectFeatures:
     def optimize(self, population_size=100):
         population = [self.rand_individual() for _ in population_size]
 
-    def mutate(self):
+    def reproduce(self, parent1, parent2):
         pass
 
-    def crossover(self):
-        pass
 
 """ neural net -- change different number of layers """
