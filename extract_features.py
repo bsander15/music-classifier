@@ -26,11 +26,11 @@ class ExtractFeatures:
             'beat': lambda signals: np.array([l.beat.beat_tracker(x) for x in signals]),
         }
     
-        possible_names = { f'{pref}_{suf}' for pref in {'mean', 'var'} for suf in self.feature_table.keys()}
-        for ftr_name in feature_names:
-            if ftr_name not in possible_names: 
-                raise ValueError(f'Feature name: {ftr_name} is invalid')
+        self.possible_names = { f'{pref}_{suf}' for pref in {'mean', 'var'} for suf in self.feature_table.keys()}
 
+        for ftr_name in feature_names:
+            if ftr_name not in self.possible_names: 
+                raise ValueError(f'Feature name: {ftr_name} is invalid')
         self.feature_vector = self.build_feature_vector(feature_names)
 
     def build_feature_vector(self, feature_names):
@@ -58,3 +58,5 @@ class ExtractFeatures:
 
     def get_feature_vector(self):
         return self.feature_vector
+
+    def get_possible_names(self)
