@@ -3,20 +3,23 @@ import sys
 import shutil
 import librosa
 import numpy as np
+from sklearn.impute import KNNImputer
 from sklearn.metrics import classification_report, confusion_matrix
 import soundfile as sf
 from pickle import dump, load
 import sklearn.preprocessing
 from pydub import AudioSegment
-from classifiers.music_other_knn import MusicKNN
+from classifiers.MOClassifier import MusicKNN
 
 
 
 class MusicAgent:
     
-    def __init__(self,audio):
+    def __init__(self,audio, music_other_model, genre_model):
         self.audio = audio
-        self.segments = []
+        self.music_other_model = music_other_model
+        self.genre_model = genre_model
+
 
     # def procces_audio(self):
 
@@ -61,11 +64,22 @@ class MusicAgent:
             dump(scaler, open('scaler.pkl', 'wb'))
             features_normalized = scaler.transform(features)
         else:
+            print('here')
             features_normalized = scaler.transform(features)
         
         return features_normalized
  
     
+    def predict(self):
+        self.segment_audio(3)
+        features = self.extract_features('segments')
+        scaler = load(open('scaler.pkl', 'rb'))
+        features_normalized = self.normalize(features,scaler)
+        preds = self.music_other_model.predict(features_normalized)
+        print(preds)
+        if (np.mean(preds) > 0.5):
+            return 'music'
+        return 'other'
 
 
 class TrainingBuilder(MusicAgent):
@@ -99,6 +113,7 @@ class TrainingBuilder(MusicAgent):
         training_data = np.hstack((feature_table_normalized,labels))
         print(training_data.shape)
         np.savetxt('data.csv', training_data, delimiter=',')
+    
 
         
 def main(argv):
@@ -111,10 +126,12 @@ def main(argv):
     data = np.genfromtxt('data/data.csv', delimiter=',')
     X = data[:,:44]
     y = data[:,44]
-    knn = MusicKNN(X,y)
-    preds = knn.predict()
-    confusion_matrix, classification_report = knn.metrics(preds)
-    print(confusion_matrix, classification_report)
+    knn = MusicKNN(X,y,5)
+    ma = MusicAgent(argv[1],knn,None)
+    print(ma.predict())
+    # preds = knn.predict()
+    # confusion_matrix, classification_report = knn.metrics(preds)
+    # print(confusion_matrix, classification_report)
 
 if __name__ == '__main__':
     main(sys.argv)

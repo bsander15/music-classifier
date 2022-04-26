@@ -5,7 +5,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.neural_network import MLPClassifier
-from pydub import AudioSegment
 
 
 
@@ -47,7 +46,7 @@ def bestK(X,y):
     print(k_avg_error)
     print(k)
 
-class MusicKNN:
+class MOClassifier:
 
     """
     Initialize KNN object with default k value of 5 (from testing above)
@@ -55,39 +54,52 @@ class MusicKNN:
     X: feature matrix
     y: classification labels
     """
-    def __init__(self,X,y,k=5):
+    def __init__(self,X,y):
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X,y, test_size=0.2)
-        self.classifier = KNeighborsClassifier(n_neighbors=k).fit(self.X_train,self.y_train)
 
     """
     Returns classifications of input data
     data: feature matrix (num features must match num features fit with)
     """
-    def predict(self,data=None):
-        if not data:
+    def predict(self, classifier, data=None):
+        if data.all() == None:
             data = self.X_test
-        return self.classifier.predict(data)
+        return classifier.predict(data)
     
     """
     Returns confusion matrix, precision, recall, f1score, and accuracy of predictions
     preds: classification predictions generated
     """
-    def metrics(self,preds):
-        return confusion_matrix(self.y_test,preds), classification_report(self.y_test,preds)
+    def metrics(self,preds, labels=None):
+        if labels == None:
+            return confusion_matrix(self.y_test,preds), classification_report(self.y_test,preds)
+        return confusion_matrix(labels,preds), classification_report(labels,preds)
+        
+
+class MusicKNN(MOClassifier):
+
+    def __init__(self,k=5):
+        self.classifier = KNeighborsClassifier(n_neighbors=k).fit(self.X_train,self.y_train)
+
+class MusicNet(MOClassifier):
+
+    def __init__(self,hidden_layer_sizes):
+        self.classifier = MLPClassifier(hidden_layer_sizes=hidden_layer_sizes, max_iter=500).fit(self.X_train,self.y_train)
+
 
 def main():
-    dataset = pd.read_csv('data/music_other_dataset_3sec.csv')
-    X = dataset.iloc[:,1:-1].values
-    y = dataset.iloc[:,45].values
-    # bestK(X,y)
-    knn = MusicKNN(X,y,1)
-    preds = knn.predict()
-    cf,cr = knn.metrics(preds)
-    print(cf)
-    print(cr)
+    data = np.genfromtxt('data/data.csv', delimiter=',')
+    X = data[:,:44]
+    y = data[:,44]
+    bestK(X,y)
+    # knn = MusicKNN(X,y,1)
+    # preds = knn.predict()
+    # cf,cr = knn.metrics(preds)
+    # print(cf)
+    # print(cr)
 
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()
 
 
