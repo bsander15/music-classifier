@@ -78,12 +78,14 @@ class MOClassifier:
 
 class MusicKNN(MOClassifier):
 
-    def __init__(self,k=5):
+    def __init__(self,X,y,k=5):
+        MOClassifier.__init__(self,X,y)
         self.classifier = KNeighborsClassifier(n_neighbors=k).fit(self.X_train,self.y_train)
 
 class MusicNet(MOClassifier):
 
-    def __init__(self,hidden_layer_sizes):
+    def __init__(self, X,y,hidden_layer_sizes):
+        MOClassifier.__init__(X,y)
         self.classifier = MLPClassifier(hidden_layer_sizes=hidden_layer_sizes, max_iter=500).fit(self.X_train,self.y_train)
 
 
