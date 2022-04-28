@@ -1,6 +1,9 @@
 
 from re import A
+import pandas as pd
+from sklearn.metrics import classification_report
 from extract_features import *
+from classifiers.MOClassifier import MusicKNN, MusicNet
 import random
 
  
@@ -8,7 +11,7 @@ class SelectFeatures:
     def __init__(self, signals, model, individual_size=6):
         self.signals = signals
         self.model = model
-        self.features = { f'{pref}_{suf}' for pref in {'mean', 'var'} for suf in {'sc', 'mfcc', 'rolloff', 'beat'}}
+        self.features = [f'{pref}_{suf}' for pref in {'mean', 'var'} for suf in {'sc', 'mfcc', 'rolloff', 'beat'}]
         self.individual_size = individual_size
 
     def rand_feature(self):
@@ -19,9 +22,15 @@ class SelectFeatures:
         return random.sample(self.features, k=self.individual_size)
 
     def evaluate(self, feature_names):
-        # use extract features
-        # run on ml model
-        return 0
+        full_data = pd.read_csv('data/data.csv')
+        data = full_data[feature_names]
+        if str.lower(self.model) is 'knn':
+            agent = MusicKNN(data.values,full_data.iloc[:,-1])
+            preds = agent.predict(agent.classifier)
+            classification_report = agent.metrics(preds,dict=True)[1]
+            return classification_report['accuracy']
+
+        
 
     def optimize(self, population_size=100, generations=50):
 

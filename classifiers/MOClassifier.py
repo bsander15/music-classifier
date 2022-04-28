@@ -70,10 +70,10 @@ class MOClassifier:
     Returns confusion matrix, precision, recall, f1score, and accuracy of predictions
     preds: classification predictions generated
     """
-    def metrics(self,preds, labels=None):
+    def metrics(self,preds, labels=None, dict=False):
         if labels == None:
-            return confusion_matrix(self.y_test,preds), classification_report(self.y_test,preds)
-        return confusion_matrix(labels,preds), classification_report(labels,preds)
+            return confusion_matrix(self.y_test,preds), classification_report(self.y_test,preds,output_dict=dict)
+        return confusion_matrix(labels,preds), classification_report(labels,preds,output_dict=dict)
         
 
 class MusicKNN(MOClassifier):
@@ -90,13 +90,16 @@ class MusicNet(MOClassifier):
 
 
 def main():
-    data = np.genfromtxt('data/data.csv', delimiter=',')
-    X = data[:,:44]
-    y = data[:,44]
-    bestK(X,y)
-    # knn = MusicKNN(X,y,1)
-    # preds = knn.predict()
-    # cf,cr = knn.metrics(preds)
+    # data = np.genfromtxt('data/data.csv', delimiter=',')
+    data = pd.read_csv('data/data.csv')
+    X = data.iloc[:,:48].values
+    y = data.iloc[:,47].values
+    print(X)
+    print(y)
+    # bestK(X,y)
+    knn = MusicKNN(X,y,1)
+    preds = knn.predict()
+    cf,cr = knn.metrics(preds)
     # print(cf)
     # print(cr)
 
