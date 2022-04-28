@@ -54,17 +54,20 @@ class MOClassifier:
     X: feature matrix
     y: classification labels
     """
-    def __init__(self,X,y):
+    def __init__(self,classifier):
+        self.classifier = classifier
+    
+    def fit(self, X, y):
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X,y, test_size=0.2)
-
+        self.classifier.fit(self.X_train, self.y_train)
     """
     Returns classifications of input data
     data: feature matrix (num features must match num features fit with)
     """
-    def predict(self, classifier, data=None):
-        if data.all() == None:
+    def predict(self, data=None):
+        if not data:
             data = self.X_test
-        return classifier.predict(data)
+        return self.classifier.predict(data)
     
     """
     Returns confusion matrix, precision, recall, f1score, and accuracy of predictions
@@ -75,33 +78,9 @@ class MOClassifier:
             return confusion_matrix(self.y_test,preds), classification_report(self.y_test,preds,output_dict=dict)
         return confusion_matrix(labels,preds), classification_report(labels,preds,output_dict=dict)
         
-
-class MusicKNN(MOClassifier):
-
-    def __init__(self,X,y,k=5):
-        MOClassifier.__init__(self,X,y)
-        self.classifier = KNeighborsClassifier(n_neighbors=k).fit(self.X_train,self.y_train)
-
-class MusicNet(MOClassifier):
-
-    def __init__(self, X,y,hidden_layer_sizes):
-        MOClassifier.__init__(X,y)
-        self.classifier = MLPClassifier(hidden_layer_sizes=hidden_layer_sizes, max_iter=500).fit(self.X_train,self.y_train)
-
-
 def main():
     # data = np.genfromtxt('data/data.csv', delimiter=',')
-    data = pd.read_csv('data/data.csv')
-    X = data.iloc[:,:48].values
-    y = data.iloc[:,47].values
-    print(X)
-    print(y)
-    # bestK(X,y)
-    knn = MusicKNN(X,y,1)
-    preds = knn.predict()
-    cf,cr = knn.metrics(preds)
-    # print(cf)
-    # print(cr)
+    pass
 
 
 if __name__ == '__main__':

@@ -111,7 +111,7 @@ class TrainingBuilder(MusicAgent):
             "mfcc_var5", "mfcc_var6", "mfcc_var7", "mfcc_var8", "mfcc_var9",
             "mfcc_var10", "mfcc_var11", "mfcc_var12","mfcc_var13", "mfcc_var14",
             "mfcc_var15", "mfcc_var16", "mfcc_var17", "mfcc_var18", "mfcc_var19",
-            "mfcc_var20", "zcr_vcr", "sc_var", "rolloff_var", "labels"]
+            "mfcc_var20", "zcr_var", "sc_var", "rolloff_var", "labels"]
 
         data = pd.DataFrame(training_data, columns=labels)
         data.to_csv('data/data.csv')

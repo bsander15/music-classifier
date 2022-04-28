@@ -1,19 +1,18 @@
-
+import time
 from re import A
 import pandas as pd
-from sklearn.metrics import classification_report
+from sklearn.neighbors import KNeighborsClassifier
 from extract_features import *
-from classifiers.MOClassifier import MusicKNN, MusicNet
+from classifiers.MOClassifier import MOClassifier
 import random
 
-MFCC_SET = [f'mfcc{i}' for i in range(1, 20)]
-FEATURE_SET = ['sc', 'zcr', 'rolloff'] + MFCC_SET
+MFCC_SET = [f'mfcc_{type}{i}' for i in range(1, 21) for type in {'mean', 'var'}]
+FEATURE_SET = ['sc', 'zcr', 'rolloff']
  
 class SelectFeatures:
-    def __init__(self, signals=None, model=None, length_range=(8, 36)):
-        self.signals = signals
+    def __init__(self, model, length_range=(1, 47)):
         self.model = model
-        self.features = [ f'{pref}_{suf}' for pref in {'mean', 'var'} for suf in FEATURE_SET] + ['tempo']
+        self.features = [ f'{pref}_{suf}' for suf in {'mean', 'var'} for pref in FEATURE_SET] + ['tempo'] + MFCC_SET
         self.length_range = length_range
 
     def rand_feature(self):
@@ -27,20 +26,20 @@ class SelectFeatures:
 
     def evaluate(self, feature_names):
         full_data = pd.read_csv('data/data.csv')
+        # data = full_data[feature_names]
         data = full_data[feature_names]
-        if str.lower(self.model) is 'knn':
-            agent = MusicKNN(data.values,full_data.iloc[:,-1])
-            preds = agent.predict(agent.classifier)
-            classification_report = agent.metrics(preds,dict=True)[1]
-            return classification_report['accuracy']
-
+        labels = full_data.iloc[:,-1]
+        self.model.fit(data,labels)
+        preds = self.model.predict()
+        classification_report = self.model.metrics(preds,dict=True)[1]
+        return classification_report['accuracy']
         
 
     def optimize(self, population_size=100, generations=50):
-
+        t0 = time.time()
         population = []
 
-        for _ in range(population_size):
+        for i in range(population_size):
             individual = self.rand_individual()
             cost = self.evaluate(individual)
             population.append((individual, cost))
@@ -48,9 +47,10 @@ class SelectFeatures:
         # note: this sorts by cost in ascending order (by accuracy)
         population.sort(key = lambda g : g[1], reverse=True)
 
-        for _ in range(generations):
+        for g in range(generations):
+            print("Begin Generation: " + str(g))
+            t1 = time.time()
             new_population = []            
-            print(len(population))
             for i in range(0, len(population), 2):
                 a, b  = population[i], population[i+1]
                 parent1, parent2 = a[0], b[0]
@@ -60,7 +60,9 @@ class SelectFeatures:
                 new_population.append( (child2, self.evaluate(child2)) )
 
             population = sorted(new_population, key = lambda g : g[1], reverse=True)
-
+            print('End Generation: ' + str(g) + ', Time: ' + str(time.time()-t1))
+        print(time.time()-t0)
+        print(population[0])
         return population[0][0] # return subset of features with highest score
 
     def interleave_uniq(self, parent1, parent2):
@@ -84,27 +86,31 @@ class SelectFeatures:
     # takes in as input two parent lists of features (no costs are provided)
     # called on both parents' lengths
     def reproduce(self, parent1, parent2, length=6):
+        t0 = time.time()
 
         # crossover
-        child = self.interleave_uniq(parent1, parent2) 
+        child = self.interleave_uniq(parent1, parent2)
 
         # if child is too small, add random features until it matches the individual size
         while len(child) < length: 
-            rand_feature = self.rand_feature()
-            if rand_feature not in child:
-                child.append(rand_feature)
+            unique_features = list(set(self.features).difference(set(child)))
+            rand_feature = random.choice(unique_features)
+            child.append(rand_feature)
 
         # if child is too long, clip the end
         child = child[:length] 
 
+        if len(child) != 47:
         # mutate: randomly choose a gene to randomly change
-        rand_gene_pos = random.randint(0, length-1)
+            rand_gene_pos = random.randint(0, length-1)
 
-        # keep trying until that feature is unique in the feature vector
-        rand_feature = self.rand_feature()
-        while rand_feature in child:
-            rand_feature = self.rand_feature()
-        child[rand_gene_pos] = rand_feature
+            # keep trying until that feature is unique in the feature vector
+            unique_features = list(set(self.features).difference(set(child)))
+            rand_feature = random.choice(unique_features)
+            # while rand_feature in child:
+            #     # print(rand_feature)
+            #     rand_feature = self.rand_feature()
+            child[rand_gene_pos] = rand_feature
 
         return child
 
@@ -112,6 +118,8 @@ class SelectFeatures:
 """ neural net -- change different number of layers """
 
 if __name__ == '__main__':
-    sf = SelectFeatures()
+    sf = SelectFeatures(MOClassifier(KNeighborsClassifier(5)))
     # ind = sf.rand_individual()
     # print(ind, len(ind))
+    print(sf.optimize(150))
+    
