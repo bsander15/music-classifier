@@ -16,29 +16,32 @@ from extract_features import ExtractFeatures
 
 class MusicAgent:
     
-    def __init__(self,audio, music_other_model, genre_model):
-        self.audio = audio
+    def __init__(self,music_files, other_files, music_other_model, genre_model):
+        self.music_files = music_files
+        self.other_files = other_files
         self.music_other_model = music_other_model
         self.genre_model = genre_model
 
 
-    # def procces_audio(self):
+    def procces_audio(self):
+        for file in os.listdir(self.music_files):
+            self.segement_audio(file,3,'music')
+        for file in os.listdir(self.other_files):
+            self.segment_audio(file,3,'other')
 
-
-    def segment_audio(self,seconds):
+    def segment_audio(self,audio_in,seconds,directory):
         #can change to from_file if no difference in wav
-        full_audio = AudioSegment.from_wav(self.audio)
+        full_audio = AudioSegment.from_wav(audio_in)
         duration = full_audio.duration_seconds
         num_segments = int(duration//seconds)
-        if os.path.isdir('segments'):
-            shutil.rmtree('segments')
-        os.mkdir('segments')
+        if not os.path.isdir(directory):
+            os.mkdir(directory)
         for segment in range(num_segments):
             t0 = segment * seconds * 1000
             t1 = t0 + (seconds * 1000)
-            full_audio[t0:t1].export('segments/file_{}.wav'.format(segment), format='wav')
-            audio, samplerate = sf.read('segments/file_{}.wav'.format(segment))
-            sf.write('segments/file_{}.wav'.format(segment), audio, samplerate, subtype='PCM_16')
+            full_audio[t0:t1].export(f'{directory}/file_{segment}.wav', format='wav')
+            audio, samplerate = sf.read(f'{directory}/file_{segment}.wav')
+            sf.write(f'{directory}/file_{segment}.wav', audio, samplerate, subtype='PCM_16')
 
     def extract_features(self, directory, feature_names=None):
         if not feature_names:
