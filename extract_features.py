@@ -24,6 +24,17 @@ class ExtractFeatures:
             'mfcc': lambda signals: np.array([l.feature.mfcc(y=x) for x in signals]),
             'rolloff': lambda signals: np.array([l.feature.spectral_rolloff(y=x)[0] for x in signals]),
             'tempo': lambda signals: np.array([l.beat.tempo(y=x) for x in signals]),
+
+            # ADDITIONAL FEATURES:
+
+                # librosa.feature.rms
+                    #returns: rmsnp.ndarray [shape=(…, 1, t)]
+                # librosa.feature.chroma_cens
+                    #returns: censnp.ndarray [shape=(…, n_chroma, t)]
+                # librosa.feature.chroma_cqt
+                    #returns: chromagramnp.ndarray [shape=(…, n_chroma, t)]
+                # librosa.feature.chroma_stft
+                    #returns: chromagramnp.ndarray [shape=(…, n_chroma, t)]
         }
     
         self.possible_names = { f'{pref}_{suf}' for suf in {'mean', 'var'} for pref in self.feature_table.keys()}
