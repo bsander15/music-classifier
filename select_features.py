@@ -1,3 +1,4 @@
+
 import time
 from re import A
 import pandas as pd
@@ -10,7 +11,7 @@ MFCC_SET = [f'mfcc_{type}{i}' for i in range(1, 21) for type in {'mean', 'var'}]
 FEATURE_SET = ['sc', 'zcr', 'rolloff']
  
 class SelectFeatures:
-    def __init__(self, model, length_range=(1, 47)):
+    def __init__(self, model, length_range=(8, 36)):
         self.model = model
         self.features = [ f'{pref}_{suf}' for suf in {'mean', 'var'} for pref in FEATURE_SET] + ['tempo'] + MFCC_SET
         self.length_range = length_range
@@ -54,8 +55,8 @@ class SelectFeatures:
             for i in range(0, len(population), 2):
                 a, b  = population[i], population[i+1]
                 parent1, parent2 = a[0], b[0]
-                child1 = self.reproduce(parent1,parent2, length=len(parent1))
-                child2 = self.reproduce(parent1,parent2, length=len(parent2))
+                child1 = self.reproduce_features(parent1,parent2, length=len(parent1))
+                child2 = self.reproduce_features(parent1,parent2, length=len(parent2))
                 new_population.append( (child1, self.evaluate(child1)) )
                 new_population.append( (child2, self.evaluate(child2)) )
 
@@ -85,7 +86,7 @@ class SelectFeatures:
 
     # takes in as input two parent lists of features (no costs are provided)
     # called on both parents' lengths
-    def reproduce(self, parent1, parent2, length=6):
+    def reproduce_features(self, parent1, parent2, length=6):
         t0 = time.time()
 
         # crossover
@@ -113,6 +114,61 @@ class SelectFeatures:
             child[rand_gene_pos] = rand_feature
 
         return child
+    
+    def reproduce_nets(self, parent1, parent2):
+        child1 = parent1
+        child2 = parent2
+        child1[1], child2[1] = (parent1[1] + parent2[1])//2
+        
+        mutate = random.randint(0,1)
+        if mutate <= 0.07:
+            child1[1] -= 1
+        elif mutate <= 0.14:
+            child2[1] -= 1
+        elif mutate <= 0.21:
+            child1[1] += 1
+        elif mutate <= 0.28:
+            child2[1] += 1
+        elif mutate <= 0.32:
+            child1[1] += 1
+            child2[1] += 1
+        elif mutate <= 0.36:
+            child1[1] += 1
+            child2[1] -= 1
+        elif mutate <= 0.40:
+            child1[1] -= 1
+            child2[1] += 1
+        elif mutate <= 0.44:
+            child1[1] -= 1
+            child2[1] -= 1
+        
+        child1[2], child2[2] = (parent1[2] + parent2[2])//2
+        mutate = random.randint(0,1)
+        if mutate <= 0.07:
+            child1[2] -= 1
+        elif mutate <= 0.14:
+            child2[2] -= 1
+        elif mutate <= 0.21:
+            child1[2] += 1
+        elif mutate <= 0.28:
+            child2[2] += 1
+        elif mutate <= 0.32:
+            child1[2] += 1
+            child2[2] += 1
+        elif mutate <= 0.36:
+            child1[2] += 1
+            child2[2] -= 1
+        elif mutate <= 0.40:
+            child1[2] -= 1
+            child2[2] += 1
+        elif mutate <= 0.44:
+            child1[2] -= 1
+            child2[2] -= 1
+
+        return child1,child2
+
+
+
 
 
 """ neural net -- change different number of layers """
