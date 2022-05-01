@@ -10,7 +10,6 @@ import soundfile as sf
 from pickle import dump, load
 import sklearn.preprocessing
 from pydub import AudioSegment
-from classifiers.MOClassifier import MusicKNN
 from extract_features import ExtractFeatures
 
 
@@ -25,13 +24,23 @@ class MusicAgent:
 
     def procces_audio(self):
         for file in os.listdir(self.music_files):
-            self.segement_audio(file,3,'music')
+            self.segment_audio(file,3,'music-segmented', 'music')
         for file in os.listdir(self.other_files):
-            self.segment_audio(file,3,'other')
+            self.segment_audio(file,3,'other-segmented', 'audio')
 
-    def segment_audio(self,audio_in,seconds,directory):
+    def segment_audio(self,audio_in,seconds,directory, from_dir):
         #can change to from_file if no difference in wav
-        full_audio = AudioSegment.from_wav(audio_in)
+
+        name = f'{from_dir}/{audio_in}'
+        if name in os.listdir(directory):
+            return
+
+        try:
+            full_audio = AudioSegment.from_wav(f'{from_dir}/{audio_in}')
+        except Exception:
+            print(f'bad!')
+            return
+
         duration = full_audio.duration_seconds
         num_segments = int(duration//seconds)
         if not os.path.isdir(directory):
@@ -39,9 +48,9 @@ class MusicAgent:
         for segment in range(num_segments):
             t0 = segment * seconds * 1000
             t1 = t0 + (seconds * 1000)
-            full_audio[t0:t1].export(f'{directory}/file_{segment}.wav', format='wav')
-            audio, samplerate = sf.read(f'{directory}/file_{segment}.wav')
-            sf.write(f'{directory}/file_{segment}.wav', audio, samplerate, subtype='PCM_16')
+            full_audio[t0:t1].export(f'{directory}/{audio_in}_{segment}.wav', format='wav')
+            audio, samplerate = sf.read(f'{directory}/{audio_in}_{segment}.wav')
+            sf.write(f'{directory}/{audio_in}_{segment}.wav', audio, samplerate, subtype='PCM_16')
 
     def extract_features(self, directory, feature_names=None):
         if not feature_names:
@@ -125,7 +134,9 @@ def main(argv):
     tb = TrainingBuilder(['music_wav_3sec'],['other_wav1_3sec','other_wav2_3sec','other_wav3_3sec'])
     tb.create_training()
 if __name__ == '__main__':
-    main(sys.argv)
+    ma = MusicAgent('./music', './audio', None, None)
+    ma.procces_audio()
+    #main(sys.argv)
 
 
 
