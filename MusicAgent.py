@@ -31,15 +31,7 @@ class MusicAgent:
     def segment_audio(self,audio_in,seconds,directory, from_dir):
         #can change to from_file if no difference in wav
 
-        name = f'{from_dir}/{audio_in}'
-        if name in os.listdir(directory):
-            return
-
-        try:
-            full_audio = AudioSegment.from_wav(f'{from_dir}/{audio_in}')
-        except Exception:
-            print(f'bad!')
-            return
+        full_audio = AudioSegment.from_wav(f'{from_dir}/{audio_in}')
 
         duration = full_audio.duration_seconds
         num_segments = int(duration//seconds)
@@ -94,11 +86,13 @@ class TrainingBuilder(MusicAgent):
 
     def create_training(self):
         music_features = np.array([])
+
         for directory in self.music_dir:
             if music_features.size == 0:
                 music_features = super().extract_features(directory)
             else:
                 music_features = np.vstack((other_features,super().extract_features(directory)))
+
         music_labels = np.ones((music_features.shape[0],1))
 
         other_features = np.array([])
@@ -107,6 +101,7 @@ class TrainingBuilder(MusicAgent):
                 other_features = super().extract_features(directory)
             else:
                 other_features = np.vstack((other_features,super().extract_features(directory)))
+
         other_labels = np.zeros((other_features.shape[0],1))
 
         labels = np.vstack((music_labels,other_labels))
@@ -134,9 +129,13 @@ def main(argv):
     tb = TrainingBuilder(['music_wav_3sec'],['other_wav1_3sec','other_wav2_3sec','other_wav3_3sec'])
     tb.create_training()
 if __name__ == '__main__':
-    ma = MusicAgent('./music', './audio', None, None)
-    ma.procces_audio()
+
+    # ma = MusicAgent('./music', './audio', None, None)
+    # ma.procces_audio()
     #main(sys.argv)
+
+    tb = TrainingBuilder(['music-segmented'],['other-segmented'])
+    tb.create_training()
 
 
 
