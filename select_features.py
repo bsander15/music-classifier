@@ -38,8 +38,11 @@ class SelectFeatures:
         if isinstance(self.model.getClassifier(), MLPClassifier):
             data = full_data[individual[0]]
             hidden_layers = np.full((1,individual[1]),individual[2])
-            self.model.setClassifier(MLPClassifier(hidden_layer_sizes=hidden_layers)) 
-        self.model.fit(data,labels)
+            self.model.setClassifier(MLPClassifier(hidden_layer_sizes=hidden_layers))
+            self.model.fit(data,labels) 
+        else:
+            data = full_data[individual]
+            self.model.fit(data,labels)
         preds = self.model.predict()
         classification_report = self.model.metrics(preds,dict=True)[1]
         return classification_report['accuracy']

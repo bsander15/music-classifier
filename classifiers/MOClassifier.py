@@ -2,7 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.multioutput import ClassifierChain
+from sklearn.neighbors import KNeighborsClassifier, kneighbors_graph
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.neural_network import MLPClassifier
 
@@ -77,10 +78,18 @@ class MOClassifier:
         if labels == None:
             return confusion_matrix(self.y_test,preds), classification_report(self.y_test,preds,output_dict=dict)
         return confusion_matrix(labels,preds), classification_report(labels,preds,output_dict=dict)
+    
+    def getClassifier(self):
+        return self.classifier
+    
+    def setClassifier(self, classifier):
+        self.classifier = classifier
+    
         
 def main():
     # data = np.genfromtxt('data/data.csv', delimiter=',')
-    pass
+    model = MOClassifier(KNeighborsClassifier(5))
+    print(type(model.classifier))
 
 
 if __name__ == '__main__':
