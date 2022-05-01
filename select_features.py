@@ -3,6 +3,7 @@ import time
 from re import A
 import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier
 from extract_features import *
 from classifiers.MOClassifier import MOClassifier
 import random
@@ -23,13 +24,21 @@ class SelectFeatures:
     def rand_individual(self):
         a,b = self.length_range
         rand_size = random.randint(a, b)
-        return random.sample(self.features, k=rand_size)
+        features = random.sample(self.features, k=rand_size)
+        if isinstance(self.model.classifier, MLPClassifier):
+            layers = random.randint(1,5)
+            neurons = random.randint(1,47)
+            return [features,layers,neurons]
+        return features
 
-    def evaluate(self, feature_names):
+    def evaluate(self, individual):
         full_data = pd.read_csv('data/data.csv')
         # data = full_data[feature_names]
-        data = full_data[feature_names]
         labels = full_data.iloc[:,-1]
+        if isinstance(self.model.getClassifier(), MLPClassifier):
+            data = full_data[individual[0]]
+            hidden_layers = np.full((1,individual[1]),individual[2])
+            self.model.setClassifier(MLPClassifier(hidden_layer_sizes=hidden_layers)) 
         self.model.fit(data,labels)
         preds = self.model.predict()
         classification_report = self.model.metrics(preds,dict=True)[1]
@@ -48,6 +57,7 @@ class SelectFeatures:
         # note: this sorts by cost in ascending order (by accuracy)
         population.sort(key = lambda g : g[1], reverse=True)
 
+        #POTENTIALLY ONLY MATE THE FITEST INDIVIDUALS AND FILL REST OF POPULATION WITH PARENTS
         for g in range(generations):
             print("Begin Generation: " + str(g))
             t1 = time.time()
