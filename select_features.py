@@ -17,6 +17,7 @@ class SelectFeatures:
         self.model = model
         self.features = [ f'{pref}_{suf}' for suf in {'mean', 'var'} for pref in FEATURE_SET] + ['tempo'] + MFCC_SET
         self.length_range = length_range
+        self.data = pd.read_csv('data/data.csv')
 
     def rand_feature(self):
         num_features = len(self.features)
@@ -33,7 +34,7 @@ class SelectFeatures:
         return features
 
     def evaluate(self, individual):
-        full_data = pd.read_csv('data/data.csv')
+        full_data = self.data
         # data = full_data[feature_names]
         labels = full_data.iloc[:,-1]
         if isinstance(self.model.getClassifier(), MLPClassifier):
