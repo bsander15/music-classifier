@@ -26,8 +26,8 @@ class MusicAgent:
         for dir in os.listdir(self.music_files):
             for file in os.listdir(self.music_files):
                 self.segment_audio(file,3,f'{dir}', 'genres')
-        for file in os.listdir(self.other_files):
-            self.segment_audio(file,3,'other-segmented', 'audio')
+        # for file in os.listdir(self.other_files):
+        #     self.segment_audio(file,3,'other-segmented', 'audio')
 
     def segment_audio(self,audio_in,seconds,directory, from_dir):
         #can change to from_file if no difference in wav
@@ -88,7 +88,6 @@ class TrainingBuilder(MusicAgent):
     def create_training(self):
         music_features = np.array([])
 
-        labels = pd.DataFrame()
         for directory in self.music_dir:
             if music_features.size == 0:
                 music_features = self.extract_features(directory)
