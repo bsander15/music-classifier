@@ -87,29 +87,31 @@ class TrainingBuilder(MusicAgent):
     def create_training(self):
         music_features = np.array([])
 
+        labels = pd.DataFrame()
         for directory in self.music_dir:
             if music_features.size == 0:
-                music_features = super().extract_features(directory)
+                music_features = self.extract_features(directory)
+                labels = pd.DataFrame(directory,range(1,music_features.shape[0]+1), columns=['labels'])
             else:
-                music_features = np.vstack((other_features,super().extract_features(directory)))
+                music_features = np.vstack((music_features,self.extract_features(directory)))
+                labels.append(pd.DataFrame(directory,range(1,music_features.shape[0]+1), columns=['labels']), ignore_index=True)
 
-        music_labels = np.ones((music_features.shape[0],1))
+        # other_features = np.array([])
+        # for directory in self.other_dir:
+        #     if other_features.size == 0:
+        #         other_features = self.extract_features(directory)
+        #     else:
+        #         other_features = np.vstack((other_features,super().extract_features(directory)))
 
-        other_features = np.array([])
-        for directory in self.other_dir:
-            if other_features.size == 0:
-                other_features = super().extract_features(directory)
-            else:
-                other_features = np.vstack((other_features,super().extract_features(directory)))
+        # other_labels = np.zeros((other_features.shape[0],1))
 
-        other_labels = np.zeros((other_features.shape[0],1))
+        # labels = np.vstack((music_labels,other_labels))
 
-        labels = np.vstack((music_labels,other_labels))
+        # feature_table = np.vstack((music_features,other_features))
+        feature_table_normalized = self.normalize(music_features)
+        
+        # training_data = np.hstack((feature_table_normalized,labels))
 
-        feature_table = np.vstack((music_features,other_features))
-        feature_table_normalized = super().normalize(feature_table)
-
-        training_data = np.hstack((feature_table_normalized,labels))
         labels = ["zcr_mean","sc_mean","mfcc_mean1","mfcc_mean2","mfcc_mean3","mfcc_mean4",
             "mfcc_mean5", "mfcc_mean6", "mfcc_mean7", "mfcc_mean8", "mfcc_mean9",
             "mfcc_mean10", "mfcc_mean11", "mfcc_mean12","mfcc_mean13", "mfcc_mean14",
@@ -118,9 +120,10 @@ class TrainingBuilder(MusicAgent):
             "mfcc_var5", "mfcc_var6", "mfcc_var7", "mfcc_var8", "mfcc_var9",
             "mfcc_var10", "mfcc_var11", "mfcc_var12","mfcc_var13", "mfcc_var14",
             "mfcc_var15", "mfcc_var16", "mfcc_var17", "mfcc_var18", "mfcc_var19",
-            "mfcc_var20", "zcr_var", "sc_var", "rolloff_var", "labels"]
+            "mfcc_var20", "zcr_var", "sc_var", "rolloff_var"]
 
-        data = pd.DataFrame(training_data, columns=labels)
+        features = pd.DataFrame(feature_table_normalized, colums='labels')
+        data = pd.concat([features,labels],axis=1)
         data.to_csv('data/data.csv')
     
 
