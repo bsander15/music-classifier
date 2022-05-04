@@ -1,6 +1,6 @@
 
 import time
-from re import A
+from re import A, M
 import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
@@ -48,9 +48,7 @@ class SelectFeatures:
 
         for i in range(population_size):
             individual = self.rand_individual()
-            t0_eval = time.time()
             cost = self.evaluate(individual)
-            print(f"Evaluate time: {time.time()-t0_eval}")
             population.append((individual, cost))
 
         # note: this sorts by cost in ascending order (by accuracy)
@@ -61,15 +59,23 @@ class SelectFeatures:
             print("Begin Generation: " + str(g))
             t1 = time.time()
             new_population = []            
-            for i in range(0, len(population), 2):
+            for i in range(0, len(population)//2, 2):
                 a, b  = population[i], population[i+1]
                 parent1, parent2 = a[0], b[0]
                 child1 = self.reproduce_features(parent1,parent2, length=len(parent1))
                 child2 = self.reproduce_features(parent1,parent2, length=len(parent2))
-                new_population.append( (child1, self.evaluate(child1)) )
-                new_population.append( (child2, self.evaluate(child2)) )
 
-            population = sorted(new_population, key = lambda g : g[1], reverse=True)
+                t0_eval = time.time()
+                new_population.append( (child1, self.evaluate(child1)) )
+                print(f"Evaluate time: {time.time()-t0_eval}")
+
+                t0_eval = time.time()
+                new_population.append( (child2, self.evaluate(child2)) )
+                print(f"Evaluate time: {time.time()-t0_eval}")
+
+            half = len(population)//2
+            population = population[:half] + new_population
+            population.sort(key = lambda g : g[1], reverse=True)
             print('End Generation: ' + str(g) + ', Time: ' + str(time.time()-t1))
         print(time.time()-t0)
         print(population[0])
@@ -125,6 +131,7 @@ class SelectFeatures:
             #     rand_feature = self.rand_feature()
             child[rand_gene_pos] = rand_feature
 
+        # print(f"Reproduce time: {time.time()-t0}")
         return child
     
 
@@ -173,7 +180,7 @@ class GANets(SelectFeatures):
             print("Begin Generation: " + str(g))
             t1 = time.time()
             new_population = []            
-            for i in range(0, len(population), 2):
+            for i in range(0, len(population)//2, 2):
                 a, b  = population[i], population[i+1]
                 parent1, parent2 = a[0], b[0]
                 child1[0] = self.reproduce_features(parent1[0],parent2[0], length=len(parent1))
@@ -184,7 +191,9 @@ class GANets(SelectFeatures):
                 new_population.append( (child1, self.evaluate(child1)) )
                 new_population.append( (child2, self.evaluate(child2)) )
 
-            population = sorted(new_population, key = lambda g : g[1], reverse=True)
+            half = len(population)//2
+            population = population[:half] + new_population
+            population.sort(key = lambda g : g[1], reverse=True)
             print('End Generation: ' + str(g) + ', Time: ' + str(time.time()-t1))
         print(time.time()-t0)
         print(population[0])
@@ -248,7 +257,9 @@ class GANets(SelectFeatures):
 """ neural net -- change different number of layers """
 
 if __name__ == '__main__':
-    sf = GANets()
+    #sf = GANets()
+    knn = KNeighborsClassifier(5)
+    sf = SelectFeatures(MOClassifier(knn))
     # ind = sf.rand_individual()
     # print(ind, len(ind))
     if len(sys.argv) > 1:
