@@ -130,7 +130,7 @@ class GAKnn(SelectFeatures):
             print('End Generation: ' + str(g) + ', Time: ' + str(time.time()-t1))
         print(time.time()-t0)
         print(population[0])
-        return population[0][0] # return subset of features with highest score
+        return population[0] # return subset of features with highest score
 
     def reproduce_k(self, parent1, parent2):
         
@@ -225,8 +225,8 @@ class GANets(SelectFeatures):
             population.sort(key = lambda g : g[1], reverse=True)
             print('End Generation: ' + str(g) + ', Time: ' + str(time.time()-t1))
         print(time.time()-t0)
-        print(population[0])
-        return population[0][0] # return subset of features with highest score
+
+        return population[0] # return subset of features with highest score
     
     def reproduce_nets(self, parent1, parent2):
 
