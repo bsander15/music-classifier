@@ -206,8 +206,8 @@ class GANets(SelectFeatures):
             for i in range(0, len(population), 2):
                 a, b  = population[i], population[i+1]
                 parent1, parent2 = a[0], b[0]
-                child1[0] = self.reproduce_features(parent1[0],parent2[0], length=len(parent1))
-                child2[0] = self.reproduce_features(parent1[0],parent2[0], length=len(parent2))
+                child1 = self.reproduce_features(parent1[0],parent2[0], length=len(parent1))
+                child2 = self.reproduce_features(parent1[0],parent2[0], length=len(parent2))
                 c1_net,c2_net = self.reproduce_nets(parent1,parent2)
                 child1 = [child1,c1_net[1],c1_net[2]]
                 child2 = [child2, c2_net[1], c2_net[2]]
@@ -278,8 +278,8 @@ class GANets(SelectFeatures):
 """ neural net -- change different number of layers """
 
 if __name__ == '__main__':
-    sf = GANets()
+    nets = GANets('data/data.csv')
     # ind = sf.rand_individual()
     # print(ind, len(ind))
-    print(sf.optimize(100))
+    print(nets.optimize())
     
