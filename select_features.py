@@ -1,13 +1,14 @@
 
 from mimetypes import init
 import time
-from re import A
+from re import A, M
 import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from extract_features import *
 from classifiers.MOClassifier import MOClassifier
 import random
+import sys
 
 MFCC_SET = [f'mfcc_{type}{i}' for i in range(1, 21) for type in {'mean', 'var'}]
 FEATURE_SET = ['sc', 'zcr', 'rolloff']
@@ -50,10 +51,13 @@ class SelectFeatures:
         child = self.interleave_uniq(parent1, parent2)
 
         # if child is too small, add random features until it matches the individual size
-        while len(child) < length: 
+        if len(child) < length: 
             unique_features = list(set(self.features).difference(set(child)))
-            rand_feature = random.choice(unique_features)
-            child.append(rand_feature)
+            random.shuffle(unique_features)
+            child_len = len(child)
+            for i in range(0, length-child_len):
+                rand_feature = unique_features[i]
+                child.append(rand_feature)
 
         # if child is too long, clip the end
         child = child[:length] 
@@ -70,6 +74,7 @@ class SelectFeatures:
             #     rand_feature = self.rand_feature()
             child[rand_gene_pos] = rand_feature
 
+        # print(f"Reproduce time: {time.time()-t0}")
         return child
 
 class GAKnn(SelectFeatures):
@@ -125,7 +130,7 @@ class GAKnn(SelectFeatures):
             print('End Generation: ' + str(g) + ', Time: ' + str(time.time()-t1))
         print(time.time()-t0)
         print(population[0])
-        return population[0][0] # return subset of features with highest score
+        return population[0] # return subset of features with highest score
 
     def reproduce_k(self, parent1, parent2):
         
@@ -204,7 +209,7 @@ class GANets(SelectFeatures):
             print("Begin Generation: " + str(g))
             t1 = time.time()
             new_population = []            
-            for i in range(0, len(population), 2):
+            for i in range(0, len(population)//2, 2):
                 a, b  = population[i], population[i+1]
                 parent1, parent2 = a[0], b[0]
                 child1 = self.reproduce_features(parent1[0],parent2[0], length=len(parent1))
@@ -215,11 +220,13 @@ class GANets(SelectFeatures):
                 new_population.append( (child1, self.evaluate(child1)) )
                 new_population.append( (child2, self.evaluate(child2)) )
 
-            population = sorted(new_population, key = lambda g : g[1], reverse=True)
+            half = len(population)//2
+            population = population[:half] + new_population
+            population.sort(key = lambda g : g[1], reverse=True)
             print('End Generation: ' + str(g) + ', Time: ' + str(time.time()-t1))
         print(time.time()-t0)
-        print(population[0])
-        return population[0][0] # return subset of features with highest score
+
+        return population[0] # return subset of features with highest score
     
     def reproduce_nets(self, parent1, parent2):
 
@@ -280,8 +287,17 @@ class GANets(SelectFeatures):
 """ neural net -- change different number of layers """
 
 if __name__ == '__main__':
-    nets = GANets('data/data.csv')
+    #sf = GANets()
+    sf = GAKnn('data/data.csv')
     # ind = sf.rand_individual()
     # print(ind, len(ind))
-    print(nets.optimize())
+    if len(sys.argv) > 1:
+        print(sf.optimize(population_size=int(sys.argv[1])))
+    else:
+        print(sf.optimize())
+
+    # nets = GANets('data/data.csv')
+    # # ind = sf.rand_individual()
+    # # print(ind, len(ind))
+    # print(nets.optimize())
     
