@@ -23,8 +23,9 @@ class MusicAgent:
 
 
     def procces_audio(self):
-        for file in os.listdir(self.music_files):
-            self.segment_audio(file,3,'music-segmented', 'music')
+        for dir in os.listdir(self.music_files):
+            for file in os.listdir(self.music_files):
+                self.segment_audio(file,3,f'{dir}', 'genres')
         for file in os.listdir(self.other_files):
             self.segment_audio(file,3,'other-segmented', 'audio')
 
