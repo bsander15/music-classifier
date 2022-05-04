@@ -129,7 +129,8 @@ class GAKnn(SelectFeatures):
 
     def reproduce_k(self, parent1, parent2):
         
-        k1,k2 = (parent1[1]+parent2[1])//2
+        k1 = (parent1[1]+parent2[1])//2
+        k2 = (parent1[1]+parent2[1])//2
 
         mutate = random.randint(0,1)
         if mutate <= 0.07:
