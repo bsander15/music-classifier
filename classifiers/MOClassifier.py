@@ -25,26 +25,23 @@ Find best k value
 '''
 
 def bestK(X,y):
-    all_errors = np.zeros((40,100))
-    for x in range(100):
-        X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.2)
+    
+    X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.2)
 
-        sample_errors = []
-        for i in range(1,41):
-            knn = KNeighborsClassifier(n_neighbors=i)
-            knn.fit(X_train,y_train)
-            y_pred = knn.predict(X_test)
-            sample_errors.append(np.mean(y_pred != y_test))
-        all_errors[:,x] = sample_errors
+    errors = []
+    for i in range(1,41):
+        knn = KNeighborsClassifier(n_neighbors=i)
+        knn.fit(X_train,y_train)
+        y_pred = knn.predict(X_test)
+        errors.append(np.mean(y_pred != y_test))
         # plt.figure(figsize=(10,7))
         # plt.plot(range(1,41),errors, color='red', linestyle='dashed', marker='o')
         # plt.title('Error Rate by K-Value')
         # plt.xlabel('K-Value')
         # plt.ylabel('Error Rate')
         # plt.show()
-    k_avg_error = np.mean(all_errors,axis=1)
-    k = np.argmin(k_avg_error)
-    print(k_avg_error)
+    k = np.argmin(errors)
+    print(errors)
     print(k)
 
 class MOClassifier:
