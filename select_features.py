@@ -27,24 +27,15 @@ class SelectFeatures:
         a,b = self.length_range
         rand_size = random.randint(a, b)
         features = random.sample(self.features, k=rand_size)
-        if isinstance(self.model.classifier, MLPClassifier):
-            layers = random.randint(1,5)
-            neurons = random.randint(1,47)
-            return [features,layers,neurons]
+
         return features
 
     def evaluate(self, individual):
         full_data = self.data
         # data = full_data[feature_names]
         labels = full_data.iloc[:,-1]
-        if isinstance(self.model.getClassifier(), MLPClassifier):
-            data = full_data[individual[0]]
-            hidden_layers = np.full((1,individual[1]),individual[2])
-            self.model.setClassifier(MLPClassifier(hidden_layer_sizes=hidden_layers))
-            self.model.fit(data,labels) 
-        else:
-            data = full_data[individual]
-            self.model.fit(data,labels)
+        data = full_data[individual]
+        self.model.fit(data,labels)
         preds = self.model.predict()
         classification_report = self.model.metrics(preds,dict=True)[1]
 
@@ -136,6 +127,69 @@ class SelectFeatures:
 
         return child
     
+
+
+class GANets(SelectFeatures):
+
+    def __init__(self):
+        super().__init__(MOClassifier(MLPClassifier()))
+    
+    def rand_individual(self):
+        a,b = self.length_range
+        rand_size = random.randint(a, b)
+        features = random.sample(self.features, k=rand_size)
+        layers = random.randint(1,5)
+        neurons = random.randint(1,47)
+        return [features,layers,neurons]
+
+    def evaluate(self, individual):
+        full_data = pd.read_csv('data/data.csv')
+        labels = full_data.iloc[:,-1]
+        data = full_data[individual[0]]
+
+        hidden_layers = np.full((individual[1]),individual[2])
+        print(hidden_layers)
+        self.model.setClassifier(MLPClassifier(hidden_layer_sizes=hidden_layers))
+        self.model.fit(data,labels) 
+        preds = self.model.predict()
+        
+        classification_report = self.model.metrics(preds,dict=True)[1]
+        return classification_report['accuracy']
+
+    def optimize(self, population_size=10, generations=10):
+        t0 = time.time()
+        population = []
+
+        for i in range(population_size):
+            individual = self.rand_individual()
+            cost = self.evaluate(individual)
+            population.append((individual, cost))
+
+        # note: this sorts by cost in ascending order (by accuracy)
+        population.sort(key = lambda g : g[1], reverse=True)
+
+        #POTENTIALLY ONLY MATE THE FITEST INDIVIDUALS AND FILL REST OF POPULATION WITH PARENTS
+        for g in range(generations):
+            print("Begin Generation: " + str(g))
+            t1 = time.time()
+            new_population = []            
+            for i in range(0, len(population), 2):
+                a, b  = population[i], population[i+1]
+                parent1, parent2 = a[0], b[0]
+                child1[0] = self.reproduce_features(parent1[0],parent2[0], length=len(parent1))
+                child2[0] = self.reproduce_features(parent1[0],parent2[0], length=len(parent2))
+                c1_net,c2_net = self.reproduce_nets(parent1,parent2)
+                child1 = [child1,c1_net[1],c1_net[2]]
+                child2 = [child2, c2_net[1], c2_net[2]]
+                new_population.append( (child1, self.evaluate(child1)) )
+                new_population.append( (child2, self.evaluate(child2)) )
+
+            population = sorted(new_population, key = lambda g : g[1], reverse=True)
+            print('End Generation: ' + str(g) + ', Time: ' + str(time.time()-t1))
+        print(time.time()-t0)
+        print(population[0])
+        return population[0][0] # return subset of features with highest score
+    
     def reproduce_nets(self, parent1, parent2):
         child1 = parent1
         child2 = parent2
@@ -191,11 +245,10 @@ class SelectFeatures:
 
 
 
-
 """ neural net -- change different number of layers """
 
 if __name__ == '__main__':
-    sf = SelectFeatures(MOClassifier(KNeighborsClassifier(5)))
+    sf = GANets()
     # ind = sf.rand_individual()
     # print(ind, len(ind))
     if len(sys.argv) > 1:
