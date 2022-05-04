@@ -10,7 +10,6 @@ import soundfile as sf
 from pickle import dump, load
 import sklearn.preprocessing
 from pydub import AudioSegment
-from classifiers.MOClassifier import MusicKNN
 from extract_features import ExtractFeatures
 
 
@@ -25,13 +24,15 @@ class MusicAgent:
 
     def procces_audio(self):
         for file in os.listdir(self.music_files):
-            self.segment_audio(file,3,'music')
+            self.segment_audio(file,3,'music-segmented', 'music')
         for file in os.listdir(self.other_files):
-            self.segment_audio(file,3,'other')
+            self.segment_audio(file,3,'other-segmented', 'audio')
 
-    def segment_audio(self,audio_in,seconds,directory):
+    def segment_audio(self,audio_in,seconds,directory, from_dir):
         #can change to from_file if no difference in wav
-        full_audio = AudioSegment.from_wav(audio_in)
+
+        full_audio = AudioSegment.from_wav(f'{from_dir}/{audio_in}')
+
         duration = full_audio.duration_seconds
         num_segments = int(duration//seconds)
         if not os.path.isdir(directory):
@@ -85,11 +86,13 @@ class TrainingBuilder(MusicAgent):
 
     def create_training(self):
         music_features = np.array([])
+
         for directory in self.music_dir:
             if music_features.size == 0:
                 music_features = super().extract_features(directory)
             else:
                 music_features = np.vstack((other_features,super().extract_features(directory)))
+
         music_labels = np.ones((music_features.shape[0],1))
 
         other_features = np.array([])
@@ -98,6 +101,7 @@ class TrainingBuilder(MusicAgent):
                 other_features = super().extract_features(directory)
             else:
                 other_features = np.vstack((other_features,super().extract_features(directory)))
+
         other_labels = np.zeros((other_features.shape[0],1))
 
         labels = np.vstack((music_labels,other_labels))
@@ -125,7 +129,13 @@ def main(argv):
     tb = TrainingBuilder(['music_wav_3sec'],['other_wav1_3sec','other_wav2_3sec','other_wav3_3sec'])
     tb.create_training()
 if __name__ == '__main__':
-    main(sys.argv)
+
+    # ma = MusicAgent('./music', './audio', None, None)
+    # ma.procces_audio()
+    #main(sys.argv)
+
+    tb = TrainingBuilder(['music-segmented'],['other-segmented'])
+    tb.create_training()
 
 
 

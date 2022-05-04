@@ -37,7 +37,7 @@ class ExtractFeatures:
                     #returns: chromagramnp.ndarray [shape=(…, n_chroma, t)]
         }
     
-        self.possible_names = { f'{pref}_{suf}' for suf in {'mean', 'var'} for pref in self.feature_table.keys()}
+        self.possible_names = { f'{pref}_{suf}' for suf in {'mean', 'var'} for pref in self.feature_table.keys()} 
 
         for ftr_name in feature_names:
             if ftr_name not in self.possible_names: 
