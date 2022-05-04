@@ -7,6 +7,7 @@ from sklearn.neural_network import MLPClassifier
 from extract_features import *
 from classifiers.MOClassifier import MOClassifier
 import random
+import sys
 
 MFCC_SET = [f'mfcc_{type}{i}' for i in range(1, 21) for type in {'mean', 'var'}]
 FEATURE_SET = ['sc', 'zcr', 'rolloff']
@@ -45,6 +46,7 @@ class SelectFeatures:
             self.model.fit(data,labels)
         preds = self.model.predict()
         classification_report = self.model.metrics(preds,dict=True)[1]
+
         return classification_report['accuracy']
         
 
@@ -54,7 +56,9 @@ class SelectFeatures:
 
         for i in range(population_size):
             individual = self.rand_individual()
+            t0_eval = time.time()
             cost = self.evaluate(individual)
+            print(f"Evaluate time: {time.time()-t0_eval}")
             population.append((individual, cost))
 
         # note: this sorts by cost in ascending order (by accuracy)
@@ -106,10 +110,13 @@ class SelectFeatures:
         child = self.interleave_uniq(parent1, parent2)
 
         # if child is too small, add random features until it matches the individual size
-        while len(child) < length: 
+        if len(child) < length: 
             unique_features = list(set(self.features).difference(set(child)))
-            rand_feature = random.choice(unique_features)
-            child.append(rand_feature)
+            random.shuffle(unique_features)
+            child_len = len(child)
+            for i in range(0, length-child_len):
+                rand_feature = unique_features[i]
+                child.append(rand_feature)
 
         # if child is too long, clip the end
         child = child[:length] 
@@ -190,5 +197,8 @@ if __name__ == '__main__':
     sf = SelectFeatures(MOClassifier(KNeighborsClassifier(5)))
     # ind = sf.rand_individual()
     # print(ind, len(ind))
-    print(sf.optimize(150))
+    if len(sys.argv) > 1:
+        print(sf.optimize(population_size=int(sys.argv[1])))
+    else:
+        print(sf.optimize())
     
