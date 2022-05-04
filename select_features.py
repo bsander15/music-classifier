@@ -221,56 +221,57 @@ class GANets(SelectFeatures):
         return population[0][0] # return subset of features with highest score
     
     def reproduce_nets(self, parent1, parent2):
-        child1 = parent1
-        child2 = parent2
-        child1[1], child2[1] = (parent1[1] + parent2[1])//2
-        
-        mutate = random.randint(0,1)
-        if mutate <= 0.07:
-            child1[1] -= 1
-        elif mutate <= 0.14:
-            child2[1] -= 1
-        elif mutate <= 0.21:
-            child1[1] += 1
-        elif mutate <= 0.28:
-            child2[1] += 1
-        elif mutate <= 0.32:
-            child1[1] += 1
-            child2[1] += 1
-        elif mutate <= 0.36:
-            child1[1] += 1
-            child2[1] -= 1
-        elif mutate <= 0.40:
-            child1[1] -= 1
-            child2[1] += 1
-        elif mutate <= 0.44:
-            child1[1] -= 1
-            child2[1] -= 1
-        
-        child1[2], child2[2] = (parent1[2] + parent2[2])//2
-        mutate = random.randint(0,1)
-        if mutate <= 0.07:
-            child1[2] -= 1
-        elif mutate <= 0.14:
-            child2[2] -= 1
-        elif mutate <= 0.21:
-            child1[2] += 1
-        elif mutate <= 0.28:
-            child2[2] += 1
-        elif mutate <= 0.32:
-            child1[2] += 1
-            child2[2] += 1
-        elif mutate <= 0.36:
-            child1[2] += 1
-            child2[2] -= 1
-        elif mutate <= 0.40:
-            child1[2] -= 1
-            child2[2] += 1
-        elif mutate <= 0.44:
-            child1[2] -= 1
-            child2[2] -= 1
 
-        return child1,child2
+        l1 = (parent1[1] + parent2[1])//2
+        l2 = (parent1[1] + parent2[1])//2
+        
+        mutate = random.randint(0,1)
+        if mutate <= 0.07:
+            l1 -= 1
+        elif mutate <= 0.14:
+            l2 -= 1
+        elif mutate <= 0.21:
+            l1 += 1
+        elif mutate <= 0.28:
+            l2 += 1
+        elif mutate <= 0.32:
+            l1 += 1
+            l2 += 1
+        elif mutate <= 0.36:
+            l1 += 1
+            l2 -= 1
+        elif mutate <= 0.40:
+            l1 -= 1
+            l2 += 1
+        elif mutate <= 0.44:
+            l1 -= 1
+            l2 -= 1
+        
+        n1 = (parent1[1] + parent2[1])//2
+        n2 = (parent1[2] + parent2[2])//2
+        mutate = random.randint(0,1)
+        if mutate <= 0.07:
+            n1 -= 1
+        elif mutate <= 0.14:
+            n2 -= 1
+        elif mutate <= 0.21:
+            n1 += 1
+        elif mutate <= 0.28:
+            n2 += 1
+        elif mutate <= 0.32:
+            n1 += 1
+            n2 += 1
+        elif mutate <= 0.36:
+            n1 += 1
+            n2 -= 1
+        elif mutate <= 0.40:
+            n1 -= 1
+            n2 += 1
+        elif mutate <= 0.44:
+            n1 -= 1
+            n2 -= 1
+
+        return [l1,n1],[l2,n2]
 
 
 
