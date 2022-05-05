@@ -56,7 +56,7 @@ class Preprocess:
     def __init__(self,audio_dir):
         self.audio_dir = audio_dir
 
-    def procces_audio(self):
+    def process_audio(self):
         for dir in os.listdir(self.audio_dir):
             if (dir != '.DS_Store'):
                 for file in os.listdir(f'{self.audio_dir}/{dir}'):
@@ -149,5 +149,5 @@ if __name__ == '__main__':
     # tb.extract_features('genres/metal')
     # for dir in os.listdir('genres-segmented'):
     #     print(len(os.listdir(f'genres-segmented/{dir}')))
-    ma = MusicAgent(None,'binary-clips')
+    ma = MusicAgent(None,None, 'genres')
     ma.preproccess()
