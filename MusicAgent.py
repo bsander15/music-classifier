@@ -6,27 +6,49 @@ import numpy as np
 import pandas as pd
 from sklearn.impute import KNNImputer
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.neighbors import KNeighborsClassifier
 import soundfile as sf
 from pickle import dump, load
 import sklearn.preprocessing
 from pydub import AudioSegment
 from extract_features import ExtractFeatures
+from select_features import GAKnn, GANets
 
 class MusicAgent:
 
-    def __init__(self, model):
+    def __init__(self, model, music_other_dir, genres_dir):
         self.model = model
+        self.music_other_dir = music_other_dir
+        self.genres_dir = genres_dir
 
-    def predict(self, audio):
+    def predict(self, audio, type):
         Preprocess.segment_audio(audio,3,'predict_segments')
         features = Preprocess.extract_features('predict_segments')
-        scaler = load(open('scaler.pkl', 'rb'))
+        scaler = load(open(f'scaler_{self.music_other_dir}.pkl', 'rb')) if type == 'music' else load(open(f'scaler_{self.genres_dir}.pkl','rb'))
         features_normalized = Preprocess.normalize(features,scaler)
         preds = self.model.predict(features_normalized)
-        print(preds)
         if (np.mean(preds) > 0.5):
             return 'music'
         return 'other'
+    
+    # def optimize_model(self):
+    #     if isinstance(self.model.getClassifier(),KNeighborsClassifier):
+    #         ga = GAKnn()
+    
+    def preproccess(self):
+        if self.music_other_dir:
+            p = Preprocess(self.music_other_dir)
+            p.process_audio()
+            p.create_training()
+        if self.genres_dir:
+            p = Preprocess(self.genres_dir)
+            p.process_audio()
+            p.create_training()
+
+    
+
+
+
 
 
 class Preprocess:
@@ -47,14 +69,14 @@ class Preprocess:
 
         duration = full_audio.duration_seconds
         num_segments = int(duration//seconds)
-        if not os.path.isdir(directory):
-            os.mkdir(directory)
+        if not os.path.isdir(f'{self.audio_dir}_segmented/{directory}'):
+            os.makedirs(f'{self.audio_dir}_segmented/{directory}')
         for segment in range(num_segments):
             t0 = segment * seconds * 1000
             t1 = t0 + (seconds * 1000)
-            full_audio[t0:t1].export(f'{directory}/{audio_in}_{segment}.wav', format='wav')
-            audio, samplerate = sf.read(f'{directory}/{audio_in}_{segment}.wav')
-            sf.write(f'{directory}/{audio_in}_{segment}.wav', audio, samplerate, subtype='PCM_16')
+            full_audio[t0:t1].export(f'{self.audio_dir}_segmented/{directory}/{segment}_{audio_in}', format='wav')
+            audio, samplerate = sf.read(f'{self.audio_dir}_segmented/{directory}/{segment}_{audio_in}')
+            sf.write(f'{self.audio_dir}_segmented/{directory}/{segment}_{audio_in}', audio, samplerate, subtype='PCM_16')
 
     def extract_features(self, directory, feature_names=None):
         if not feature_names:
@@ -70,7 +92,7 @@ class Preprocess:
     def normalize(self, features, scaler=None):
         if not scaler:
             scaler = sklearn.preprocessing.StandardScaler().fit(features)
-            dump(scaler, open('scaler_genres.pkl', 'wb'))
+            dump(scaler, open(f'scaler_{self.audio_dir}.pkl', 'wb'))
             features_normalized = scaler.transform(features)
         else:
             print('here')
@@ -103,7 +125,7 @@ class Preprocess:
 
         features = pd.DataFrame(feature_table_normalized, columns=columns)
         data = pd.concat([features,labels],axis=1)
-        data.to_csv('data/genre_data.csv')
+        data.to_csv(f'data/{self.audio_dir}_data.csv')
     
 
         
@@ -121,9 +143,11 @@ if __name__ == '__main__':
 
     # ma = MusicAgent('./genres', '', None, None)
     # ma.procces_audio()
-    tb = Preprocess('genres-segmented')
+    # tb = Preprocess('genres')
     # # tb.procces_audio()
-    tb.create_training()
+    # tb.procces_audio()
     # tb.extract_features('genres/metal')
     # for dir in os.listdir('genres-segmented'):
     #     print(len(os.listdir(f'genres-segmented/{dir}')))
+    ma = MusicAgent(None,'binary-clips')
+    ma.preproccess()
