@@ -35,15 +35,15 @@ class Preprocess:
         self.audio_dir = audio_dir
 
     def procces_audio(self):
-        for dir in os.listdir(self.audio_files):
-            for file in os.listdir(f'{self.audio_files}/{dir}'):
-                f = f'{self.music_files}/{dir}/{file}'
-                self.segment_audio(file,3,dir, dir)
+        for dir in os.listdir(self.audio_dir):
+            if (dir != '.DS_Store'):
+                for file in os.listdir(f'{self.audio_dir}/{dir}'):
+                    self.segment_audio(file,3,dir)
 
-    def segment_audio(self,audio_in,seconds,directory, from_dir):
+    def segment_audio(self,audio_in,seconds,directory):
         #can change to from_file if no difference in wav
 
-        full_audio = AudioSegment.from_wav(f'genres/{from_dir}/{audio_in}')
+        full_audio = AudioSegment.from_wav(f'{self.audio_dir}/{directory}/{audio_in}')
 
         duration = full_audio.duration_seconds
         num_segments = int(duration//seconds)
@@ -61,9 +61,10 @@ class Preprocess:
             feature_names = ['zcr_mean', 'sc_mean', 'mfcc_mean', 'rolloff_mean', 'tempo_mean', 'mfcc_var', 'zcr_var', 'sc_var', 'rolloff_var']
 
         signals = np.array([librosa.load('{}/{}'.format(directory,f))[0] for f in os.listdir(directory)])
-
+        print(directory)
+        print(signals.shape)
         fe = ExtractFeatures(signals, feature_names) 
-
+        print(fe.get_feature_vector().shape)
         return fe.get_feature_vector()
     
     def normalize(self, features, scaler=None):
@@ -78,15 +79,8 @@ class Preprocess:
         return features_normalized
 
     def create_training(self):
-        audio_features = np.array([])
-        labels = pd.DataFrame([])
-
-        for directory in os.listdir(self.audio_dir):
-            audio_features = np.vstack((audio_features,self.extract_features(f'{self.audio_dir}/{directory}')))
-            labels.append(pd.DataFrame(f'{self.audio_dir}/{directory}',range(1,audio_features.shape[0]+1), columns=['labels']), ignore_index=True)
-
-        feature_table_normalized = self.normalize(audio_features)
-        
+        audio_features = pd.DataFrame()
+        labels = pd.DataFrame()
         columns = ["zcr_mean","sc_mean","mfcc_mean1","mfcc_mean2","mfcc_mean3","mfcc_mean4",
             "mfcc_mean5", "mfcc_mean6", "mfcc_mean7", "mfcc_mean8", "mfcc_mean9",
             "mfcc_mean10", "mfcc_mean11", "mfcc_mean12","mfcc_mean13", "mfcc_mean14",
@@ -96,6 +90,16 @@ class Preprocess:
             "mfcc_var10", "mfcc_var11", "mfcc_var12","mfcc_var13", "mfcc_var14",
             "mfcc_var15", "mfcc_var16", "mfcc_var17", "mfcc_var18", "mfcc_var19",
             "mfcc_var20", "zcr_var", "sc_var", "rolloff_var"]
+
+        for directory in os.listdir(self.audio_dir):
+            dir_features = pd.DataFrame(self.extract_features(f'{self.audio_dir}/{directory}'), columns=columns)
+            audio_features = pd.concat([audio_features, dir_features], ignore_index=True)
+            print(dir_features.shape[0])
+            labels = pd.concat([labels,pd.DataFrame(f'{directory}',range(1,dir_features.shape[0]+1), columns=['labels'])], ignore_index=True)
+
+        feature_table_normalized = self.normalize(audio_features)
+        
+
 
         features = pd.DataFrame(feature_table_normalized, columns=columns)
         data = pd.concat([features,labels],axis=1)
@@ -117,6 +121,9 @@ if __name__ == '__main__':
 
     # ma = MusicAgent('./genres', '', None, None)
     # ma.procces_audio()
-    tb = Preprocess('genres-segmented', [''])
+    tb = Preprocess('genres-segmented')
+    # # tb.procces_audio()
     tb.create_training()
-
+    # tb.extract_features('genres/metal')
+    # for dir in os.listdir('genres-segmented'):
+    #     print(len(os.listdir(f'genres-segmented/{dir}')))
