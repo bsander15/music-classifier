@@ -1,53 +1,75 @@
 import os
 import sys
 import shutil
+from telnetlib import GA
 import librosa
 import numpy as np
 import pandas as pd
 from sklearn.impute import KNNImputer
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier
 import soundfile as sf
 from pickle import dump, load
 import sklearn.preprocessing
 from pydub import AudioSegment
+from classifiers.MOClassifier import MOClassifier
 from extract_features import ExtractFeatures
 from select_features import GAKnn, GANets
 
 class MusicAgent:
 
-    def __init__(self, model, music_other_dir, genres_dir):
+    def __init__(self, model, binary_dir, genres_dir):
         self.model = model
-        self.music_other_dir = music_other_dir
+        self.binary_dir = binary_dir
         self.genres_dir = genres_dir
+        self.binary_data_full = None
+        self.genres_data_full = None
+        self.binary_params = None
+        self.genres_params = None
+        self.binary_model_optimal = MOClassifier(model)
+        self.genres_model_optimal = MOClassifier(model)
 
     def predict(self, audio, type):
         Preprocess.segment_audio(audio,3,'predict_segments')
         features = Preprocess.extract_features('predict_segments')
-        scaler = load(open(f'scaler_{self.music_other_dir}.pkl', 'rb')) if type == 'music' else load(open(f'scaler_{self.genres_dir}.pkl','rb'))
+        scaler = load(open(f'scaler_{self.binary_dir}.pkl', 'rb')) if type == 'music' else load(open(f'scaler_{self.genres_dir}.pkl','rb'))
         features_normalized = Preprocess.normalize(features,scaler)
         preds = self.model.predict(features_normalized)
         if (np.mean(preds) > 0.5):
             return 'music'
         return 'other'
     
-    # def optimize_model(self):
-    #     if isinstance(self.model.getClassifier(),KNeighborsClassifier):
-    #         ga = GAKnn()
-    
+    def optimize_model(self):
+        if isinstance(self.model.getClassifier(),KNeighborsClassifier):
+            binary_ga = GAKnn(f'data/{self.binary_dir}_segmented_data.csv')
+            genres_ga = GAKnn(f'data/{self.genres_dir}_segmented_data.csv')
+            self.binary_params = binary_ga.optimize()[0]
+            self.genres_params = genres_ga.optimize()[0]
+            self.binary_model_optimal.setClassifier(KNeighborsClassifier(self.binary_params[1]))
+            self.genres_model_optimal.setClassifier(KNeighborsClassifier(self.genres_params[1]))
+
+        else:
+            binary_ga = GANets(f'data/{self.binary_dir}_segmnetd_data.csv')
+            genres_ga = GANets(f'data/{self.genres_dir}_segmented_data.csv')
+            self.binary_params = binary_ga.optimize()[0]
+            self.genres_params = genres_ga.optimize()[0]
+            self.binary_model_optimal.setClassifier(MLPClassifier(self.binary_params[1]))
+            self.genres_model_optimal.setClassifier(MLPClassifier(self.genres_params[1]))
+
+        self.binary_model_optimal.fit(self.binary_data_full[self.binary_params[0]],self.binary_data_full.iloc[:,:-1])
+        self.genres_model_optimal.fit(self.genres_data_full[self.genres_params[0]],self.genres_data_full.iloc[:,:-1])
+
+        print(self.binary_model_optimal.metrics(self.binary_model_optimal.predict())[1])
+        print(self.genres_model_optimal.metrics(self.genres_model_optimal.predict())[1])
+
     def preproccess(self):
-        if self.music_other_dir:
-            Preprocess(self.music_other_dir).process_audio()
-            Preprocess(f'{self.music_other_dir}_segmented').create_training()
+        if self.binary_dir:
+            Preprocess(self.binary_dir).process_audio()
+            self.binary_data_full = Preprocess(f'{self.binary_dir}_segmented').create_training()
         if self.genres_dir:
             Preprocess(self.genres_dir).process_audio()
-            Preprocess(f'{self.genres_dir}_segmented').create_training()
-
-    
-
-
-
-
+            self.genres_data_full = Preprocess(f'{self.genres_dir}_segmented').create_training()
 
 class Preprocess:
     
@@ -125,6 +147,8 @@ class Preprocess:
         features = pd.DataFrame(feature_table_normalized, columns=columns)
         data = pd.concat([features,labels],axis=1)
         data.to_csv(f'data/{self.audio_dir}_data.csv')
+
+        return data
     
 
         
@@ -148,5 +172,6 @@ if __name__ == '__main__':
     # tb.extract_features('genres/metal')
     # for dir in os.listdir('genres-segmented'):
     #     print(len(os.listdir(f'genres-segmented/{dir}')))
-    ma = MusicAgent(None,None, 'genres')
+    ma = MusicAgent(KNeighborsClassifier(), 'binary-clips', 'genres-clips')
     ma.preproccess()
+    ma.optimize_model()
