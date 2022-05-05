@@ -20,6 +20,7 @@ class SelectFeatures:
         self.length_range = length_range
         self.full_data = pd.read_csv(data)
 
+
     def rand_feature(self):
         num_features = len(self.features)
         return self.features[random.randint(0, num_features-1)]
@@ -285,7 +286,7 @@ class GANets(SelectFeatures):
 
 if __name__ == '__main__':
     #sf = GANets()
-    sf = GAKnn('data/genre_data.csv')
+    sf = GAKnn('data/data.csv')
     # ind = sf.rand_individual()
     # print(ind, len(ind))
     if len(sys.argv) > 1:
