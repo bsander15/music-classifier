@@ -1,4 +1,5 @@
 import os
+from pdb import post_mortem
 import sys
 import shutil
 from telnetlib import GA
@@ -31,14 +32,30 @@ class MusicAgent:
         self.genres_model_optimal = MOClassifier(model)
 
     def predict(self, audio, type):
-        Preprocess.segment_audio(audio,3,'predict_segments')
-        features = Preprocess.extract_features('predict_segments')
-        scaler = load(open(f'scaler_{self.binary_dir}.pkl', 'rb')) if type == 'music' else load(open(f'scaler_{self.genres_dir}.pkl','rb'))
-        features_normalized = Preprocess.normalize(features,scaler)
-        preds = self.model.predict(features_normalized)
-        if (np.mean(preds) > 0.5):
-            return 'music'
-        return 'other'
+        p = Preprocess('predict')
+        p.segment_audio(audio,3,'audio')
+        binary_features = p.extract_features('predict_segmented/audio', self.binary_params[0])
+        scaler = load(open(f'scaler_{self.binary_dir}.pkl', 'rb'))
+        binary_features_normalized = p.normalize(binary_features,scaler)
+        preds = self.binary_model_optimal.predict(binary_features_normalized)
+
+        if self.predict_helper(preds) == 'music':
+            genres_features = p.extract_features('predict_segmented/audio', self.genres_params[0])
+            scaler = load(open(f'scaler_{self.genres_dir}.pkl','rb'))
+            genres_features_normalized = p.normalize(genres_features,scaler)
+            preds = self.genres_model_optimal.predict(genres_features_normalized)
+
+            return self.predict_helper(preds)
+        
+        return 'Not a Music File'
+
+    def predict_helper(self, preds):
+        labels, pos = np.unique(preds, return_inverse=True)
+        frequency = np.bincount(pos)
+        maxpos = frequency.argmax()
+
+        return labels[maxpos]
+        
     
     def optimize_model(self):
         if isinstance(self.model,KNeighborsClassifier):
