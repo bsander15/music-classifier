@@ -12,28 +12,38 @@ import sklearn.preprocessing
 from pydub import AudioSegment
 from extract_features import ExtractFeatures
 
-
 class MusicAgent:
-    
-    def __init__(self,music_files, other_files, music_other_model, genre_model):
-        self.music_files = music_files
-        self.other_files = other_files
-        self.music_other_model = music_other_model
-        self.genre_model = genre_model
 
+    def __init__(self, model):
+        self.model = model
+
+    def predict(self, audio):
+        Preprocess.segment_audio(audio,3,'predict_segments')
+        features = Preprocess.extract_features('predict_segments')
+        scaler = load(open('scaler.pkl', 'rb'))
+        features_normalized = Preprocess.normalize(features,scaler)
+        preds = self.model.predict(features_normalized)
+        print(preds)
+        if (np.mean(preds) > 0.5):
+            return 'music'
+        return 'other'
+
+
+class Preprocess:
+    
+    def __init__(self,audio_dir):
+        self.audio_dir = audio_dir
 
     def procces_audio(self):
-        for dir in os.listdir(self.music_files):
-            for file in os.listdir(f'{self.music_files}/{dir}'):
-                f = f'{self.music_files}/{dir}/{file}'
-                self.segment_audio(file,3,f'{dir}', dir)
-        # for file in os.listdir(self.other_files):
-        #     self.segment_audio(file,3,'other-segmented', 'audio')
+        for dir in os.listdir(self.audio_dir):
+            if (dir != '.DS_Store'):
+                for file in os.listdir(f'{self.audio_dir}/{dir}'):
+                    self.segment_audio(file,3,dir)
 
-    def segment_audio(self,audio_in,seconds,directory, from_dir):
+    def segment_audio(self,audio_in,seconds,directory):
         #can change to from_file if no difference in wav
 
-        full_audio = AudioSegment.from_wav(f'genres/{from_dir}/{audio_in}')
+        full_audio = AudioSegment.from_wav(f'{self.audio_dir}/{directory}/{audio_in}')
 
         duration = full_audio.duration_seconds
         num_segments = int(duration//seconds)
@@ -51,9 +61,10 @@ class MusicAgent:
             feature_names = ['zcr_mean', 'sc_mean', 'mfcc_mean', 'rolloff_mean', 'tempo_mean', 'mfcc_var', 'zcr_var', 'sc_var', 'rolloff_var']
 
         signals = np.array([librosa.load('{}/{}'.format(directory,f))[0] for f in os.listdir(directory)])
-
+        print(directory)
+        print(signals.shape)
         fe = ExtractFeatures(signals, feature_names) 
-
+        print(fe.get_feature_vector().shape)
         return fe.get_feature_vector()
     
     def normalize(self, features, scaler=None):
@@ -66,54 +77,10 @@ class MusicAgent:
             features_normalized = scaler.transform(features)
         
         return features_normalized
- 
-    
-    def predict(self):
-        self.segment_audio(3)
-        features = self.extract_features('segments')
-        scaler = load(open('scaler.pkl', 'rb'))
-        features_normalized = self.normalize(features,scaler)
-        preds = self.music_other_model.predict(features_normalized)
-        print(preds)
-        if (np.mean(preds) > 0.5):
-            return 'music'
-        return 'other'
-
-
-class TrainingBuilder(MusicAgent):
-
-    def __init__(self, music_dir, other_dir):
-        self.music_dir = music_dir
-        self.other_dir = other_dir
 
     def create_training(self):
-        music_features = np.array([])
-
-        for directory in os.listdir(self.music_dir):
-            if music_features.size == 0:
-                music_features = self.extract_features(f'{self.music_dir}/{directory}')
-                labels = pd.DataFrame(f'{self.music_dir}/{directory}',range(1,music_features.shape[0]+1), columns=['labels'])
-            else:
-                music_features = np.vstack((music_features,self.extract_features(f'{self.music_dir}/{directory}')))
-                labels.append(pd.DataFrame(f'{self.music_dir}/{directory}',range(1,music_features.shape[0]+1), columns=['labels']), ignore_index=True)
-
-
-        # other_features = np.array([])
-        # for directory in self.other_dir:
-        #     if other_features.size == 0:
-        #         other_features = self.extract_features(directory)
-        #     else:
-        #         other_features = np.vstack((other_features,super().extract_features(directory)))
-
-        # other_labels = np.zeros((other_features.shape[0],1))
-
-        # labels = np.vstack((music_labels,other_labels))
-
-        # feature_table = np.vstack((music_features,other_features))
-        feature_table_normalized = self.normalize(music_features)
-        
-        # training_data = np.hstack((feature_table_normalized,labels))
-
+        audio_features = pd.DataFrame()
+        labels = pd.DataFrame()
         columns = ["zcr_mean","sc_mean","mfcc_mean1","mfcc_mean2","mfcc_mean3","mfcc_mean4",
             "mfcc_mean5", "mfcc_mean6", "mfcc_mean7", "mfcc_mean8", "mfcc_mean9",
             "mfcc_mean10", "mfcc_mean11", "mfcc_mean12","mfcc_mean13", "mfcc_mean14",
@@ -124,6 +91,16 @@ class TrainingBuilder(MusicAgent):
             "mfcc_var15", "mfcc_var16", "mfcc_var17", "mfcc_var18", "mfcc_var19",
             "mfcc_var20", "zcr_var", "sc_var", "rolloff_var"]
 
+        for directory in os.listdir(self.audio_dir):
+            dir_features = pd.DataFrame(self.extract_features(f'{self.audio_dir}/{directory}'), columns=columns)
+            audio_features = pd.concat([audio_features, dir_features], ignore_index=True)
+            print(dir_features.shape[0])
+            labels = pd.concat([labels,pd.DataFrame(f'{directory}',range(1,dir_features.shape[0]+1), columns=['labels'])], ignore_index=True)
+
+        feature_table_normalized = self.normalize(audio_features)
+        
+
+
         features = pd.DataFrame(feature_table_normalized, columns=columns)
         data = pd.concat([features,labels],axis=1)
         data.to_csv('data/genre_data.csv')
@@ -131,8 +108,7 @@ class TrainingBuilder(MusicAgent):
 
         
 def main(argv):
-    tb = TrainingBuilder(['music_wav_3sec'],['other_wav1_3sec','other_wav2_3sec','other_wav3_3sec'])
-    tb.create_training()
+    pass
 if __name__ == '__main__':
 
     # ma = MusicAgent('./music', './audio', None, None)
@@ -145,6 +121,9 @@ if __name__ == '__main__':
 
     # ma = MusicAgent('./genres', '', None, None)
     # ma.procces_audio()
-    tb = TrainingBuilder('genres-segmented', [''])
+    tb = Preprocess('genres-segmented')
+    # # tb.procces_audio()
     tb.create_training()
-
+    # tb.extract_features('genres/metal')
+    # for dir in os.listdir('genres-segmented'):
+    #     print(len(os.listdir(f'genres-segmented/{dir}')))
