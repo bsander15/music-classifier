@@ -112,7 +112,7 @@ class GAKnn(SelectFeatures):
             print("Begin Generation: " + str(g))
             t1 = time.time()
             new_population = []            
-            for i in range(0, len(population), 2):
+            for i in range(0, len(population)//2, 2):
                 a, b  = population[i], population[i+1]
                 parent1, parent2 = a[0], b[0]
                 child1 = self.reproduce_features(parent1[0],parent2[0], length=len(parent1))
@@ -123,7 +123,9 @@ class GAKnn(SelectFeatures):
                 new_population.append( (child1, self.evaluate(child1)) )
                 new_population.append( (child2, self.evaluate(child2)) )
 
-            population = sorted(new_population, key = lambda g : g[1], reverse=True)
+            half = len(population)//2
+            population = population[:half] + new_population
+            population.sort(key = lambda g : g[1], reverse=True)
             print('End Generation: ' + str(g) + ', Time: ' + str(time.time()-t1))
         print(time.time()-t0)
         print(population[0])
