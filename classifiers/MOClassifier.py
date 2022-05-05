@@ -85,22 +85,24 @@ class MOClassifier:
         
 def main():
     # data = np.genfromtxt('data/data.csv', delimiter=',')
-    model = MOClassifier(KNeighborsClassifier(5))
-    data = pd.read_csv('data/genre_data.csv')
-    X = data.iloc[:,:-1]
-    y = data.iloc[:,-1]
-    print(X.shape)
-    print(y.shape)
+    # model = MOClassifier(KNeighborsClassifier(5))
+    # data = pd.read_csv('data/genre_data.csv')
+    # X = data.iloc[:,:-1]
+    # y = data.iloc[:,-1]
+    # print(X.shape)
+    # print(y.shape)
     
-    model.fit(X,y)
-    preds = model.predict()
-    unique, pos = np.unique(preds,return_inverse=True)
-    print(preds)
-    print(unique)
-    print(pos)
-    counts = np.bincount(pos)
-    maxpos = counts.argmax()
-    print(unique[maxpos], counts[maxpos])
+    # model.fit(X,y)
+    # preds = model.predict()
+    # unique, pos = np.unique(preds,return_inverse=True)
+    # print(preds)
+    # print(unique)
+    # print(pos)
+    # counts = np.bincount(pos)
+    # maxpos = counts.argmax()
+    # print(unique[maxpos], counts[maxpos])
+    a = np.array([[1,2],[1,2]],[[1,2],[1,2]])
+    print(a.shape)
 if __name__ == '__main__':
     main()
 
