@@ -37,13 +37,11 @@ class MusicAgent:
     
     def preproccess(self):
         if self.music_other_dir:
-            p = Preprocess(self.music_other_dir)
-            p.process_audio()
-            p.create_training()
+            Preprocess(self.music_other_dir).process_audio()
+            Preprocess(f'{self.music_other_dir}_segmented').create_training()
         if self.genres_dir:
-            p = Preprocess(self.genres_dir)
-            p.process_audio()
-            p.create_training()
+            Preprocess(self.genres_dir).process_audio()
+            Preprocess(f'{self.genres_dir}_segmented').create_training()
 
     
 
@@ -82,7 +80,7 @@ class Preprocess:
         if not feature_names:
             feature_names = ['zcr_mean', 'sc_mean', 'mfcc_mean', 'rolloff_mean', 'tempo_mean', 'mfcc_var', 'zcr_var', 'sc_var', 'rolloff_var']
 
-        signals = np.array([librosa.load('{}/{}'.format(directory,f))[0] for f in os.listdir(directory)])
+        signals = np.array([librosa.load('{}/{}'.format(directory,f))[0] for f in os.listdir(directory) if f != '.DS_Store'])
         print(directory)
         print(signals.shape)
         fe = ExtractFeatures(signals, feature_names) 
@@ -114,10 +112,11 @@ class Preprocess:
             "mfcc_var20", "zcr_var", "sc_var", "rolloff_var"]
 
         for directory in os.listdir(self.audio_dir):
-            dir_features = pd.DataFrame(self.extract_features(f'{self.audio_dir}/{directory}'), columns=columns)
-            audio_features = pd.concat([audio_features, dir_features], ignore_index=True)
-            print(dir_features.shape[0])
-            labels = pd.concat([labels,pd.DataFrame(f'{directory}',range(1,dir_features.shape[0]+1), columns=['labels'])], ignore_index=True)
+            if directory != '.DS_Store':
+                dir_features = pd.DataFrame(self.extract_features(f'{self.audio_dir}/{directory}'), columns=columns)
+                audio_features = pd.concat([audio_features, dir_features], ignore_index=True)
+                print(dir_features.shape[0])
+                labels = pd.concat([labels,pd.DataFrame(f'{directory}',range(1,dir_features.shape[0]+1), columns=['labels'])], ignore_index=True)
 
         feature_table_normalized = self.normalize(audio_features)
         
