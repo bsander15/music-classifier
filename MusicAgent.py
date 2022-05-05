@@ -57,8 +57,8 @@ class MusicAgent:
             self.binary_model_optimal.setClassifier(MLPClassifier(self.binary_params[1]))
             self.genres_model_optimal.setClassifier(MLPClassifier(self.genres_params[1]))
 
-        self.binary_model_optimal.fit(self.binary_data_full[self.binary_params[0]],self.binary_data_full.iloc[:,:-1])
-        self.genres_model_optimal.fit(self.genres_data_full[self.genres_params[0]],self.genres_data_full.iloc[:,:-1])
+        self.binary_model_optimal.fit(self.binary_data_full[self.binary_params[0]],self.binary_data_full.iloc[:,-1])
+        self.genres_model_optimal.fit(self.genres_data_full[self.genres_params[0]],self.genres_data_full.iloc[:,-1])
 
         print(self.binary_model_optimal.metrics(self.binary_model_optimal.predict())[1])
         print(self.genres_model_optimal.metrics(self.genres_model_optimal.predict())[1])
