@@ -96,7 +96,7 @@ class GAKnn(SelectFeatures):
         classification_report = self.model.metrics(preds,dict=True)[1]
         return classification_report['accuracy']
     
-    def optimize(self, population_size=100, generations=50):
+    def optimize(self, population_size=100, generations=10):
         t0 = time.time()
         population = []
 

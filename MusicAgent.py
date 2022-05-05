@@ -35,13 +35,13 @@ class MusicAgent:
         p = Preprocess('predict')
         p.segment_audio(audio,3,'audio')
         binary_features = p.extract_features('predict_segmented/audio', self.binary_params[0])
-        scaler = load(open(f'scaler_{self.binary_dir}.pkl', 'rb'))
+        scaler = load(open(f'scaler_{self.binary_dir}_segmented.pkl', 'rb'))
         binary_features_normalized = p.normalize(binary_features,scaler)
         preds = self.binary_model_optimal.predict(binary_features_normalized)
 
         if self.predict_helper(preds) == 'music':
             genres_features = p.extract_features('predict_segmented/audio', self.genres_params[0])
-            scaler = load(open(f'scaler_{self.genres_dir}.pkl','rb'))
+            scaler = load(open(f'scaler_{self.genres_dir}_segmented.pkl','rb'))
             genres_features_normalized = p.normalize(genres_features,scaler)
             preds = self.genres_model_optimal.predict(genres_features_normalized)
 
@@ -195,4 +195,4 @@ if __name__ == '__main__':
     ma = MusicAgent(KNeighborsClassifier(), 'binary-clips', 'genres-clips')
     ma.preproccess()
     ma.optimize_model()
-    print(ma.predict('insert path here'))
+    print(ma.predict('rock.00023.wav'))
