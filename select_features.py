@@ -59,9 +59,6 @@ class SelectFeatures:
                 rand_feature = unique_features[i]
                 child.append(rand_feature)
 
-        # if child is too long, clip the end
-        child = child[:length] 
-
         if len(child) != 47:
         # mutate: randomly choose a gene to randomly change
             rand_gene_pos = random.randint(0, length-1)
