@@ -70,7 +70,6 @@ class ExtractFeatures:
                     else: 
                         i = int(suffix.split('mean')[1])
                         mfcc_i = feature_arr[:,i-1,:]
-                        print(mfcc_i.shape)
                         feature = np.mean(mfcc_i, axis=1, keepdims=True)
                 else:
                     feature = np.mean(feature_arr, axis=1, keepdims=True)
@@ -81,7 +80,6 @@ class ExtractFeatures:
                     else: 
                         i = int(suffix.split('var')[1])
                         mfcc_i = feature_arr[:,i-1,:]
-                        print(mfcc_i.shape)
                         feature = np.var(mfcc_i, axis=1, keepdims=True)
                 else:
                     feature = np.var(feature_arr, axis=1, keepdims=True)

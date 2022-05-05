@@ -97,6 +97,7 @@ class GAKnn(SelectFeatures):
         return classification_report['accuracy']
     
     def optimize(self, population_size=100, generations=10):
+        print("RUNNING GA")
         t0 = time.time()
         population = []
 

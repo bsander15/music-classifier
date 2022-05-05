@@ -32,6 +32,7 @@ class MusicAgent:
         self.genres_model_optimal = MOClassifier(model)
 
     def predict(self, audio):
+        print('PREDICTING GIVEN AUDIO FILE')
         p = Preprocess('predict')
         p.segment_audio(audio,3,'audio')
         binary_features = p.extract_features('predict_segmented/audio', self.binary_params[0])
@@ -43,7 +44,7 @@ class MusicAgent:
         if self.predict_helper(preds) == 'music':
             genres_features = p.extract_features('predict_segmented/audio', self.genres_params[0])
             p.normalize(self.genres_data_full[self.genres_params[0]])
-            scaler = load(open(f'scaler_predict_segmented.pkl','rb'))
+            scaler = load(open(f'scaler_predict.pkl','rb'))
             genres_features_normalized = p.normalize(genres_features,scaler)
             preds = self.genres_model_optimal.predict(genres_features_normalized)
 
@@ -60,6 +61,7 @@ class MusicAgent:
         
     
     def optimize_model(self):
+        print('OPTIMIZING MODEL')
         if isinstance(self.model,KNeighborsClassifier):
             binary_ga = GAKnn(f'data/{self.binary_dir}_segmented_data.csv')
             genres_ga = GAKnn(f'data/{self.genres_dir}_segmented_data.csv')
@@ -82,10 +84,8 @@ class MusicAgent:
         self.binary_model_optimal.fit(self.binary_data_full[self.binary_params[0]],self.binary_data_full.iloc[:,-1])
         self.genres_model_optimal.fit(self.genres_data_full[self.genres_params[0]],self.genres_data_full.iloc[:,-1])
 
-        print(self.binary_model_optimal.metrics(self.binary_model_optimal.predict())[1])
-        print(self.genres_model_optimal.metrics(self.genres_model_optimal.predict())[1])
-
     def preproccess(self):
+        print('PREPROCCESSING DATA')
         if self.binary_dir:
             Preprocess(self.binary_dir).process_audio()
             self.binary_data_full = Preprocess(f'{self.binary_dir}_segmented').create_training()
@@ -105,6 +105,7 @@ class Preprocess:
                     self.segment_audio(file,3,dir)
 
     def segment_audio(self,audio_in,seconds,directory):
+        print("SEGMENTING AUDIO")
         #can change to from_file if no difference in wav
 
         full_audio = AudioSegment.from_wav(f'{self.audio_dir}/{directory}/{audio_in}')
@@ -121,28 +122,27 @@ class Preprocess:
             sf.write(f'{self.audio_dir}_segmented/{directory}/{segment}_{audio_in}', audio, samplerate, subtype='PCM_16')
 
     def extract_features(self, directory, feature_names=None):
+        print("EXTRACTING FEATURES")
         if not feature_names:
             feature_names = ['zcr_mean', 'sc_mean', 'mfcc_mean', 'rolloff_mean', 'tempo_mean', 'mfcc_var', 'zcr_var', 'sc_var', 'rolloff_var']
 
         signals = np.array([librosa.load('{}/{}'.format(directory,f))[0] for f in os.listdir(directory) if f != '.DS_Store'])
-        print(directory)
-        print(signals.shape)
         fe = ExtractFeatures(signals, feature_names) 
-        print(fe.get_feature_vector().shape)
         return fe.get_feature_vector()
     
     def normalize(self, features, scaler=None):
+        print("NORMALIZING DATA")
         if not scaler:
             scaler = sklearn.preprocessing.StandardScaler().fit(features)
             dump(scaler, open(f'scaler_{self.audio_dir}.pkl', 'wb'))
             features_normalized = scaler.transform(features)
         else:
-            print('here')
             features_normalized = scaler.transform(features)
         
         return features_normalized
 
     def create_training(self):
+        print("CREATING TRAINING DATA")
         audio_features = pd.DataFrame()
         labels = pd.DataFrame()
         columns = ["zcr_mean","sc_mean","mfcc_mean1","mfcc_mean2","mfcc_mean3","mfcc_mean4",
@@ -159,7 +159,6 @@ class Preprocess:
             if directory != '.DS_Store':
                 dir_features = pd.DataFrame(self.extract_features(f'{self.audio_dir}/{directory}'), columns=columns)
                 audio_features = pd.concat([audio_features, dir_features], ignore_index=True)
-                print(dir_features.shape[0])
                 labels = pd.concat([labels,pd.DataFrame(f'{directory}',range(1,dir_features.shape[0]+1), columns=['labels'])], ignore_index=True)
 
         feature_table_normalized = self.normalize(audio_features)
