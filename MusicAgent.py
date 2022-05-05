@@ -41,7 +41,7 @@ class MusicAgent:
         return 'other'
     
     def optimize_model(self):
-        if isinstance(self.model.getClassifier(),KNeighborsClassifier):
+        if isinstance(self.model,KNeighborsClassifier):
             binary_ga = GAKnn(f'data/{self.binary_dir}_segmented_data.csv')
             genres_ga = GAKnn(f'data/{self.genres_dir}_segmented_data.csv')
             self.binary_params = binary_ga.optimize()[0]
@@ -54,8 +54,11 @@ class MusicAgent:
             genres_ga = GANets(f'data/{self.genres_dir}_segmented_data.csv')
             self.binary_params = binary_ga.optimize()[0]
             self.genres_params = genres_ga.optimize()[0]
-            self.binary_model_optimal.setClassifier(MLPClassifier(self.binary_params[1]))
-            self.genres_model_optimal.setClassifier(MLPClassifier(self.genres_params[1]))
+            binary_net = np.full((self.binary_params[1]),self.binary_params[2])
+            genres_net = np.full((self.genres_params[1]),self.genres_params[2])
+
+            self.binary_model_optimal.setClassifier(MLPClassifier(binary_net))
+            self.genres_model_optimal.setClassifier(MLPClassifier(genres_net))
 
         self.binary_model_optimal.fit(self.binary_data_full[self.binary_params[0]],self.binary_data_full.iloc[:,-1])
         self.genres_model_optimal.fit(self.genres_data_full[self.genres_params[0]],self.genres_data_full.iloc[:,-1])
