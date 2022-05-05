@@ -192,7 +192,7 @@ class GANets(SelectFeatures):
         classification_report = self.model.metrics(preds,dict=True)[1]
         return classification_report['accuracy']
 
-    def optimize(self, population_size=10, generations=10):
+    def optimize(self, population_size=2, generations=1):
         t0 = time.time()
         population = []
 
@@ -215,8 +215,8 @@ class GANets(SelectFeatures):
                 child1 = self.reproduce_features(parent1[0],parent2[0], length=len(parent1))
                 child2 = self.reproduce_features(parent1[0],parent2[0], length=len(parent2))
                 c1_net,c2_net = self.reproduce_nets(parent1,parent2)
-                child1 = [child1,c1_net[1],c1_net[2]]
-                child2 = [child2, c2_net[1], c2_net[2]]
+                child1 = [child1,c1_net[0],c1_net[1]]
+                child2 = [child2, c2_net[0], c2_net[1]]
                 new_population.append( (child1, self.evaluate(child1)) )
                 new_population.append( (child2, self.evaluate(child2)) )
 
@@ -288,14 +288,16 @@ class GANets(SelectFeatures):
 
 if __name__ == '__main__':
     #sf = GANets()
-    sf = GAKnn('data/data.csv')
+    sf = GANets('data/data.csv')
     # ind = sf.rand_individual()
     # print(ind, len(ind))
     if len(sys.argv) > 1:
-        print(sf.optimize(population_size=int(sys.argv[1])))
+        features = sf.optimize(population_size=int(sys.argv[1]))
     else:
-        print(sf.optimize())
-
+        features = sf.optimize()
+    print(features)
+    results = pd.DataFrame(features[0])
+    results.to_csv('results')
     # nets = GANets('data/data.csv')
     # # ind = sf.rand_individual()
     # # print(ind, len(ind))

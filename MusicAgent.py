@@ -24,7 +24,7 @@ class MusicAgent:
 
     def procces_audio(self):
         for dir in os.listdir(self.music_files):
-            for file in os.listdir(self.music_files):
+            for file in os.listdir(dir):
                 self.segment_audio(file,3,f'{dir}', 'genres')
         # for file in os.listdir(self.other_files):
         #     self.segment_audio(file,3,'other-segmented', 'audio')
@@ -58,7 +58,7 @@ class MusicAgent:
     def normalize(self, features, scaler=None):
         if not scaler:
             scaler = sklearn.preprocessing.StandardScaler().fit(features)
-            dump(scaler, open('scaler.pkl', 'wb'))
+            dump(scaler, open('scaler_genres.pkl', 'wb'))
             features_normalized = scaler.transform(features)
         else:
             print('here')
@@ -122,7 +122,7 @@ class TrainingBuilder(MusicAgent):
             "mfcc_var15", "mfcc_var16", "mfcc_var17", "mfcc_var18", "mfcc_var19",
             "mfcc_var20", "zcr_var", "sc_var", "rolloff_var"]
 
-        features = pd.DataFrame(feature_table_normalized, colums='labels')
+        features = pd.DataFrame(feature_table_normalized, columns='labels')
         data = pd.concat([features,labels],axis=1)
         data.to_csv('data/data.csv')
     
