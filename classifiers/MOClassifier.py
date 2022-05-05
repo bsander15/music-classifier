@@ -62,8 +62,8 @@ class MOClassifier:
     Returns classifications of input data
     data: feature matrix (num features must match num features fit with)
     """
-    def predict(self, data=None):
-        if not data:
+    def predict(self, data=np.array([])):
+        if data.size == 0:
             data = self.X_test
         return self.classifier.predict(data)
     

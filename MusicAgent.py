@@ -43,7 +43,7 @@ class MusicAgent:
         if self.predict_helper(preds) == 'music':
             genres_features = p.extract_features('predict_segmented/audio', self.genres_params[0])
             p.normalize(self.genres_data_full[self.genres_params[0]])
-            scaler = load(open(f'scaler_predict_segmented.pkl','rb'))
+            scaler = load(open(f'scaler_predict.pkl','rb'))
             genres_features_normalized = p.normalize(genres_features,scaler)
             preds = self.genres_model_optimal.predict(genres_features_normalized)
 
