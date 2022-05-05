@@ -59,7 +59,7 @@ class MusicAgent:
     def normalize(self, features, scaler=None):
         if not scaler:
             scaler = sklearn.preprocessing.StandardScaler().fit(features)
-            dump(scaler, open('scaler.pkl', 'wb'))
+            dump(scaler, open('scaler_genres.pkl', 'wb'))
             features_normalized = scaler.transform(features)
         else:
             print('here')
@@ -114,7 +114,7 @@ class TrainingBuilder(MusicAgent):
         
         # training_data = np.hstack((feature_table_normalized,labels))
 
-        labels = ["zcr_mean","sc_mean","mfcc_mean1","mfcc_mean2","mfcc_mean3","mfcc_mean4",
+        columns = ["zcr_mean","sc_mean","mfcc_mean1","mfcc_mean2","mfcc_mean3","mfcc_mean4",
             "mfcc_mean5", "mfcc_mean6", "mfcc_mean7", "mfcc_mean8", "mfcc_mean9",
             "mfcc_mean10", "mfcc_mean11", "mfcc_mean12","mfcc_mean13", "mfcc_mean14",
             "mfcc_mean15", "mfcc_mean16", "mfcc_mean17", "mfcc_mean18", "mfcc_mean19",
@@ -124,8 +124,8 @@ class TrainingBuilder(MusicAgent):
             "mfcc_var15", "mfcc_var16", "mfcc_var17", "mfcc_var18", "mfcc_var19",
             "mfcc_var20", "zcr_var", "sc_var", "rolloff_var"]
 
-        features = pd.DataFrame(feature_table_normalized, columns=labels)
-        data = pd.concat([features,pd.DataFrame(labels)],axis=1)
+        features = pd.DataFrame(feature_table_normalized, columns=columns)
+        data = pd.concat([features,labels],axis=1)
         data.to_csv('data/genre_data.csv')
     
 
