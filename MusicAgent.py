@@ -67,7 +67,7 @@ class MusicAgent:
             self.genres_model_optimal.setClassifier(KNeighborsClassifier(self.genres_params[1]))
 
         else:
-            binary_ga = GANets(f'data/{self.binary_dir}_segmnetd_data.csv')
+            binary_ga = GANets(f'data/{self.binary_dir}_segmented_data.csv')
             genres_ga = GANets(f'data/{self.genres_dir}_segmented_data.csv')
             self.binary_params = binary_ga.optimize()[0]
             self.genres_params = genres_ga.optimize()[0]
