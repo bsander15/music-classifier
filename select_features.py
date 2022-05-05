@@ -285,7 +285,7 @@ class GANets(SelectFeatures):
 
 if __name__ == '__main__':
     #sf = GANets()
-    sf = GANets('data/data.csv')
+    sf = GAKnn('data/genre_data.csv')
     # ind = sf.rand_individual()
     # print(ind, len(ind))
     if len(sys.argv) > 1:
