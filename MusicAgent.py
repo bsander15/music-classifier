@@ -31,7 +31,7 @@ class MusicAgent:
         self.binary_model_optimal = MOClassifier(model)
         self.genres_model_optimal = MOClassifier(model)
 
-    def predict(self, audio, type):
+    def predict(self, audio):
         p = Preprocess('predict')
         p.segment_audio(audio,3,'audio')
         binary_features = p.extract_features('predict_segmented/audio', self.binary_params[0])
@@ -195,3 +195,4 @@ if __name__ == '__main__':
     ma = MusicAgent(KNeighborsClassifier(), 'binary-clips', 'genres-clips')
     ma.preproccess()
     ma.optimize_model()
+    print(ma.predict('insert path here'))
