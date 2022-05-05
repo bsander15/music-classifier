@@ -12,23 +12,33 @@ import sklearn.preprocessing
 from pydub import AudioSegment
 from extract_features import ExtractFeatures
 
-
 class MusicAgent:
-    
-    def __init__(self,music_files, other_files, music_other_model, genre_model):
-        self.music_files = music_files
-        self.other_files = other_files
-        self.music_other_model = music_other_model
-        self.genre_model = genre_model
 
+    def __init__(self, model):
+        self.model = model
+
+    def predict(self, audio):
+        Preprocess.segment_audio(audio,3,'predict_segments')
+        features = Preprocess.extract_features('predict_segments')
+        scaler = load(open('scaler.pkl', 'rb'))
+        features_normalized = Preprocess.normalize(features,scaler)
+        preds = self.model.predict(features_normalized)
+        print(preds)
+        if (np.mean(preds) > 0.5):
+            return 'music'
+        return 'other'
+
+
+class Preprocess:
+    
+    def __init__(self,audio_dir):
+        self.audio_dir = audio_dir
 
     def procces_audio(self):
-        for dir in os.listdir(self.music_files):
-            for file in os.listdir(f'{self.music_files}/{dir}'):
+        for dir in os.listdir(self.audio_files):
+            for file in os.listdir(f'{self.audio_files}/{dir}'):
                 f = f'{self.music_files}/{dir}/{file}'
-                self.segment_audio(file,3,f'{dir}', dir)
-        # for file in os.listdir(self.other_files):
-        #     self.segment_audio(file,3,'other-segmented', 'audio')
+                self.segment_audio(file,3,dir, dir)
 
     def segment_audio(self,audio_in,seconds,directory, from_dir):
         #can change to from_file if no difference in wav
@@ -66,54 +76,17 @@ class MusicAgent:
             features_normalized = scaler.transform(features)
         
         return features_normalized
- 
-    
-    def predict(self):
-        self.segment_audio(3)
-        features = self.extract_features('segments')
-        scaler = load(open('scaler.pkl', 'rb'))
-        features_normalized = self.normalize(features,scaler)
-        preds = self.music_other_model.predict(features_normalized)
-        print(preds)
-        if (np.mean(preds) > 0.5):
-            return 'music'
-        return 'other'
-
-
-class TrainingBuilder(MusicAgent):
-
-    def __init__(self, music_dir, other_dir):
-        self.music_dir = music_dir
-        self.other_dir = other_dir
 
     def create_training(self):
-        music_features = np.array([])
+        audio_features = np.array([])
+        labels = pd.DataFrame([])
 
-        for directory in os.listdir(self.music_dir):
-            if music_features.size == 0:
-                music_features = self.extract_features(f'{self.music_dir}/{directory}')
-                labels = pd.DataFrame(f'{self.music_dir}/{directory}',range(1,music_features.shape[0]+1), columns=['labels'])
-            else:
-                music_features = np.vstack((music_features,self.extract_features(f'{self.music_dir}/{directory}')))
-                labels.append(pd.DataFrame(f'{self.music_dir}/{directory}',range(1,music_features.shape[0]+1), columns=['labels']), ignore_index=True)
+        for directory in os.listdir(self.audio_dir):
+            audio_features = np.vstack((audio_features,self.extract_features(f'{self.audio_dir}/{directory}')))
+            labels.append(pd.DataFrame(f'{self.audio_dir}/{directory}',range(1,audio_features.shape[0]+1), columns=['labels']), ignore_index=True)
 
-
-        # other_features = np.array([])
-        # for directory in self.other_dir:
-        #     if other_features.size == 0:
-        #         other_features = self.extract_features(directory)
-        #     else:
-        #         other_features = np.vstack((other_features,super().extract_features(directory)))
-
-        # other_labels = np.zeros((other_features.shape[0],1))
-
-        # labels = np.vstack((music_labels,other_labels))
-
-        # feature_table = np.vstack((music_features,other_features))
-        feature_table_normalized = self.normalize(music_features)
+        feature_table_normalized = self.normalize(audio_features)
         
-        # training_data = np.hstack((feature_table_normalized,labels))
-
         columns = ["zcr_mean","sc_mean","mfcc_mean1","mfcc_mean2","mfcc_mean3","mfcc_mean4",
             "mfcc_mean5", "mfcc_mean6", "mfcc_mean7", "mfcc_mean8", "mfcc_mean9",
             "mfcc_mean10", "mfcc_mean11", "mfcc_mean12","mfcc_mean13", "mfcc_mean14",
@@ -131,8 +104,7 @@ class TrainingBuilder(MusicAgent):
 
         
 def main(argv):
-    tb = TrainingBuilder(['music_wav_3sec'],['other_wav1_3sec','other_wav2_3sec','other_wav3_3sec'])
-    tb.create_training()
+    pass
 if __name__ == '__main__':
 
     # ma = MusicAgent('./music', './audio', None, None)
@@ -145,6 +117,6 @@ if __name__ == '__main__':
 
     # ma = MusicAgent('./genres', '', None, None)
     # ma.procces_audio()
-    tb = TrainingBuilder('genres-segmented', [''])
+    tb = Preprocess('genres-segmented', [''])
     tb.create_training()
 
