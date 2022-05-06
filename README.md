@@ -13,10 +13,10 @@ accuracy.
 
 Index of the repositiory:
 
-1. /classifiers
+1. /classifiers -- contains MOClassifier, a wrapper for KNN algorithm
 2. /experimental-code -- you can ignore this directory
-3. extract_features.py
-4. MusicAgent.py 
-5. select_features.py
-6. scaler_genres.pkl
-7. scaler.pkl
+3. extract_features.py -- given a list of feature names, returns feature vector using Librosa calls to extract features
+4. MusicAgent.py -- run this to segment inputted file, run genetic algorithm, and output results for 
+5. select_features.py -- contains genetic algorithms for KNN and neural nets (optimizing parameters feature selection)
+
+To get started, run: `python3 MusicAgent`. (NOTE: training/testing data not provided in repository)
