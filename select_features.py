@@ -289,10 +289,8 @@ class GANets(SelectFeatures):
 """ neural net -- change different number of layers """
 
 if __name__ == '__main__':
-    #sf = GANets()
     sf = GAKnn('data/data.csv')
-    # ind = sf.rand_individual()
-    # print(ind, len(ind))
+
     if len(sys.argv) > 1:
         features = sf.optimize(population_size=int(sys.argv[1]))
     else:
@@ -300,8 +298,5 @@ if __name__ == '__main__':
     print(features)
     results = pd.DataFrame(features[0])
     results.to_csv('results')
-    # nets = GANets('data/data.csv')
-    # # ind = sf.rand_individual()
-    # # print(ind, len(ind))
-    # print(nets.optimize())
+
     

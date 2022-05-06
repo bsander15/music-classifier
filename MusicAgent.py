@@ -176,23 +176,6 @@ class Preprocess:
 def main(argv):
     pass
 if __name__ == '__main__':
-
-    # ma = MusicAgent('./music', './audio', None, None)
-    # ma.procces_audio()
-    #main(sys.argv)
-
-    # tb = TrainingBuilder(['music-segmented'],['other-segmented'])
-    # tb.create_training()
-
-
-    # ma = MusicAgent('./genres', '', None, None)
-    # ma.procces_audio()
-    # tb = Preprocess('genres')
-    # # tb.procces_audio()
-    # tb.procces_audio()
-    # tb.extract_features('genres/metal')
-    # for dir in os.listdir('genres-segmented'):
-    #     print(len(os.listdir(f'genres-segmented/{dir}')))
     ma = MusicAgent(KNeighborsClassifier(), 'binary-clips', 'genres-clips')
     ma.preproccess()
     ma.optimize_model()

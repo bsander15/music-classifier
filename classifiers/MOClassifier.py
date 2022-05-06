@@ -6,20 +6,6 @@ from sklearn.multioutput import ClassifierChain
 from sklearn.neighbors import KNeighborsClassifier, kneighbors_graph
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.neural_network import MLPClassifier
-
-
-
-# dataset = pd.read_csv('data/music_other_dataset_3sec.csv')
-# X = dataset.iloc[:,1:-1].values
-# y = dataset.iloc[:,45].values
-# X_train, X_test,y_train,y_test = train_test_split(X,y, test_size=0.2)
-
-# clf = MLPClassifier(hidden_layer_sizes=(44,44,44,44,44), max_iter=500)
-# clf.fit(X_train,y_train)
-# preds = clf.predict(X_test)
-# print(np.mean(y_test == preds))
-# print(confusion_matrix(y_test,preds))
-# print(classification_report(y_test,preds))
 '''
 Find best k value
 '''
@@ -34,12 +20,6 @@ def bestK(X,y):
         knn.fit(X_train,y_train)
         y_pred = knn.predict(X_test)
         errors.append(np.mean(y_pred != y_test))
-        # plt.figure(figsize=(10,7))
-        # plt.plot(range(1,41),errors, color='red', linestyle='dashed', marker='o')
-        # plt.title('Error Rate by K-Value')
-        # plt.xlabel('K-Value')
-        # plt.ylabel('Error Rate')
-        # plt.show()
     k = np.argmin(errors)
     print(errors)
     print(k)
@@ -84,25 +64,7 @@ class MOClassifier:
     
         
 def main():
-    # data = np.genfromtxt('data/data.csv', delimiter=',')
-    # model = MOClassifier(KNeighborsClassifier(5))
-    # data = pd.read_csv('data/genre_data.csv')
-    # X = data.iloc[:,:-1]
-    # y = data.iloc[:,-1]
-    # print(X.shape)
-    # print(y.shape)
-    
-    # model.fit(X,y)
-    # preds = model.predict()
-    # unique, pos = np.unique(preds,return_inverse=True)
-    # print(preds)
-    # print(unique)
-    # print(pos)
-    # counts = np.bincount(pos)
-    # maxpos = counts.argmax()
-    # print(unique[maxpos], counts[maxpos])
-    a = np.array([[1,2],[1,2]],[[1,2],[1,2]])
-    print(a.shape)
+    pass
 if __name__ == '__main__':
     main()
 
