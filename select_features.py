@@ -59,18 +59,19 @@ class SelectFeatures:
             for i in range(0, length-child_len):
                 rand_feature = unique_features[i]
                 child.append(rand_feature)
+        mutate = random.randint(0,1)
+        if mutate <= 0.15:
+            if len(child) != 47:
+            # mutate: randomly choose a gene to randomly change
+                rand_gene_pos = random.randint(0, length-1)
 
-        if len(child) != 47:
-        # mutate: randomly choose a gene to randomly change
-            rand_gene_pos = random.randint(0, length-1)
-
-            # keep trying until that feature is unique in the feature vector
-            unique_features = list(set(self.features).difference(set(child)))
-            rand_feature = random.choice(unique_features)
-            # while rand_feature in child:
-            #     # print(rand_feature)
-            #     rand_feature = self.rand_feature()
-            child[rand_gene_pos] = rand_feature
+                # keep trying until that feature is unique in the feature vector
+                unique_features = list(set(self.features).difference(set(child)))
+                rand_feature = random.choice(unique_features)
+                # while rand_feature in child:
+                #     # print(rand_feature)
+                #     rand_feature = self.rand_feature()
+                child[rand_gene_pos] = rand_feature
 
         # print(f"Reproduce time: {time.time()-t0}")
         return child
