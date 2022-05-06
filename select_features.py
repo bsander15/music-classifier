@@ -60,6 +60,7 @@ class SelectFeatures:
                 rand_feature = unique_features[i]
                 child.append(rand_feature)
         mutate = random.randint(0,1)
+        
         if mutate <= 0.15:
             if len(child) != 47:
             # mutate: randomly choose a gene to randomly change
@@ -97,12 +98,13 @@ class GAKnn(SelectFeatures):
         classification_report = self.model.metrics(preds,dict=True)[1]
         return classification_report['accuracy']
     
-    def optimize(self, population_size=100, generations=10):
+    def optimize(self, population_size=100, generations=50):
         print("RUNNING GA")
         t0 = time.time()
         population = []
 
         for i in range(population_size):
+            print(f'ind{i}')
             individual = self.rand_individual()
             cost = self.evaluate(individual)
             population.append((individual, cost))
@@ -118,8 +120,8 @@ class GAKnn(SelectFeatures):
             for i in range(0, len(population)//2, 2):
                 a, b  = population[i], population[i+1]
                 parent1, parent2 = a[0], b[0]
-                child1 = self.reproduce_features(parent1[0],parent2[0], length=len(parent1))
-                child2 = self.reproduce_features(parent1[0],parent2[0], length=len(parent2))
+                child1 = self.reproduce_features(parent1[0],parent2[0], length=len(parent1[0]))
+                child2 = self.reproduce_features(parent1[0],parent2[0], length=len(parent2[0]))
                 k1, k2 = self.reproduce_k(parent1,parent2)
                 child1 = [child1, k1]
                 child2 = [child2, k2]
@@ -187,14 +189,14 @@ class GANets(SelectFeatures):
 
         hidden_layers = np.full((individual[1]),individual[2])
         print(hidden_layers)
-        self.model.setClassifier(MLPClassifier(hidden_layer_sizes=hidden_layers))
+        self.model.setClassifier(MLPClassifier(hidden_layer_sizes=hidden_layers,max_iter=500))
         self.model.fit(data,labels) 
         preds = self.model.predict()
         
         classification_report = self.model.metrics(preds,dict=True)[1]
         return classification_report['accuracy']
 
-    def optimize(self, population_size=2, generations=1):
+    def optimize(self, population_size=50, generations=10):
         t0 = time.time()
         population = []
 
@@ -214,8 +216,8 @@ class GANets(SelectFeatures):
             for i in range(0, len(population)//2, 2):
                 a, b  = population[i], population[i+1]
                 parent1, parent2 = a[0], b[0]
-                child1 = self.reproduce_features(parent1[0],parent2[0], length=len(parent1))
-                child2 = self.reproduce_features(parent1[0],parent2[0], length=len(parent2))
+                child1 = self.reproduce_features(parent1[0],parent2[0], length=len(parent1[0]))
+                child2 = self.reproduce_features(parent1[0],parent2[0], length=len(parent2[0]))
                 c1_net,c2_net = self.reproduce_nets(parent1,parent2)
                 child1 = [child1,c1_net[0],c1_net[1]]
                 child2 = [child2, c2_net[0], c2_net[1]]
@@ -237,9 +239,11 @@ class GANets(SelectFeatures):
         
         mutate = random.randint(0,1)
         if mutate <= 0.07:
-            l1 -= 1
+            if l1 != 1:
+                l1 -= 1
         elif mutate <= 0.14:
-            l2 -= 1
+            if l2 != 1:
+                l2 -= 1
         elif mutate <= 0.21:
             l1 += 1
         elif mutate <= 0.28:
@@ -249,21 +253,26 @@ class GANets(SelectFeatures):
             l2 += 1
         elif mutate <= 0.36:
             l1 += 1
-            l2 -= 1
+            if l2 != 1:
+                l2 -= 1
         elif mutate <= 0.40:
-            l1 -= 1
+            if l1 != 1:
+                l1 -= 1
             l2 += 1
         elif mutate <= 0.44:
-            l1 -= 1
-            l2 -= 1
+            if l1 != 1 and l2 != 1:
+                l1 -= 1
+                l2 -= 1
         
         n1 = (parent1[1] + parent2[1])//2
         n2 = (parent1[2] + parent2[2])//2
         mutate = random.randint(0,1)
         if mutate <= 0.07:
-            n1 -= 1
+            if n1 != 1:
+                n1 -= 1
         elif mutate <= 0.14:
-            n2 -= 1
+            if n2 != 1:
+                n2 -= 1
         elif mutate <= 0.21:
             n1 += 1
         elif mutate <= 0.28:
@@ -273,13 +282,16 @@ class GANets(SelectFeatures):
             n2 += 1
         elif mutate <= 0.36:
             n1 += 1
-            n2 -= 1
+            if n2 != 1:
+                n2 -= 1
         elif mutate <= 0.40:
-            n1 -= 1
+            if n1 != 1:
+                n1 -= 1
             n2 += 1
         elif mutate <= 0.44:
-            n1 -= 1
-            n2 -= 1
+            if n1 != 1 and n2 != 1:
+                n1 -= 1
+                n2 -= 1
 
         return [l1,n1],[l2,n2]
 
@@ -289,7 +301,7 @@ class GANets(SelectFeatures):
 """ neural net -- change different number of layers """
 
 if __name__ == '__main__':
-    sf = GAKnn('data/data.csv')
+    sf = GANets('data/genre_data.csv')
 
     if len(sys.argv) > 1:
         features = sf.optimize(population_size=int(sys.argv[1]))

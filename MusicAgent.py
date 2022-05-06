@@ -1,7 +1,5 @@
 import os
 from pdb import post_mortem
-import sys
-import shutil
 from telnetlib import GA
 import librosa
 import numpy as np
