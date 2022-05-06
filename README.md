@@ -18,5 +18,6 @@ Index of the repositiory:
 3. extract_features.py -- given a list of feature names, returns feature vector using Librosa calls to extract features
 4. MusicAgent.py -- run this to segment inputted file, run genetic algorithm, and output results for 
 5. select_features.py -- contains genetic algorithms for KNN and neural nets (optimizing parameters feature selection)
+6. /data -- contains .csv files containing features extracted for each sample, for training the models
 
-To get started, run: `python3 MusicAgent.py`. (NOTE: training/testing data not provided in repository)
+To get started, run: `python3 MusicAgent.py`. (NOTE: you must provide your own test WAV file)
