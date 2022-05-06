@@ -20,4 +20,4 @@ Index of the repositiory:
 5. select_features.py -- contains genetic algorithms for KNN and neural nets (optimizing parameters feature selection)
 6. /data -- contains .csv files containing features extracted for each sample, for training the models
 
-To get started, run: `python3 MusicAgent.py`. (NOTE: you must provide your own test WAV file)
+See code_walkthrough.mp4 for a demonstration of code
