@@ -19,4 +19,4 @@ Index of the repositiory:
 4. MusicAgent.py -- run this to segment inputted file, run genetic algorithm, and output results for 
 5. select_features.py -- contains genetic algorithms for KNN and neural nets (optimizing parameters feature selection)
 
-To get started, run: `python3 MusicAgent`. (NOTE: training/testing data not provided in repository)
+To get started, run: `python3 MusicAgent.py`. (NOTE: training/testing data not provided in repository)
